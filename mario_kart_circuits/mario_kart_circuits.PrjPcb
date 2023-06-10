@@ -49,6 +49,40 @@ PrefsVaultGUID=
 PrefsRevisionGUID=
 
 [Document1]
+DocumentPath=blue_pill.SchDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=KVZMUIIC
+
+[Document2]
+DocumentPath=power_supplies.SchDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=KTXPFDKF
+
+[Document3]
 DocumentPath=bumper.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -65,8 +99,8 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=ZEDBBUZN
 
-[Document2]
-DocumentPath=blue_pill.SchDoc
+[Document4]
+DocumentPath=ir_array.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -80,7 +114,7 @@ ClassGenCCAutoRoomEnabled=0
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-DocumentUniqueId=KVZMUIIC
+DocumentUniqueId=IWPCAHMY
 
 [Configuration1]
 Name=Sources

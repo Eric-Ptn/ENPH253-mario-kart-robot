@@ -1,2 +1,4 @@
-Record=TopLevelDocument|FileName=blue_pill.SchDoc|SheetNumber=2
-Record=NoMainPathDocument|SourceDocument=blue_pill.SchDoc|FileName=bumper.SchDoc|SheetNumber=1
+Record=TopLevelDocument|FileName=blue_pill.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=blue_pill.SchDoc|FileName=bumper.SchDoc|SheetNumber=3
+Record=NoMainPathDocument|SourceDocument=blue_pill.SchDoc|FileName=ir_array.SchDoc|SheetNumber=4
+Record=NoMainPathDocument|SourceDocument=blue_pill.SchDoc|FileName=power_supplies.SchDoc|SheetNumber=2
