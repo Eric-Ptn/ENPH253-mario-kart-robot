@@ -1,4 +1,12 @@
-Record=TopLevelDocument|FileName=blue_pill.SchDoc|SheetNumber=1
-Record=NoMainPathDocument|SourceDocument=blue_pill.SchDoc|FileName=bumper.SchDoc|SheetNumber=3
-Record=NoMainPathDocument|SourceDocument=blue_pill.SchDoc|FileName=ir_array.SchDoc|SheetNumber=4
-Record=NoMainPathDocument|SourceDocument=blue_pill.SchDoc|FileName=power_supplies.SchDoc|SheetNumber=2
+Record=TopLevelDocument|FileName=ir_array.SchDoc|SheetNumber=4
+Record=SheetSymbol|SourceDocument=ir_array.SchDoc|Designator=Designator|SchDesignator=Designator|FileName=led_phototransistor.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=led_phototransistor.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ir_array.SchDoc|Designator=Designator|SchDesignator=Designator|FileName=led_phototransistor.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=led_phototransistor.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ir_array.SchDoc|Designator=Designator|SchDesignator=Designator|FileName=led_phototransistor.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=led_phototransistor.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ir_array.SchDoc|Designator=Designator|SchDesignator=Designator|FileName=led_phototransistor.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=led_phototransistor.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ir_array.SchDoc|Designator=Designator|SchDesignator=Designator|FileName=led_phototransistor.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=led_phototransistor.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ir_array.SchDoc|Designator=Designator|SchDesignator=Designator|FileName=led_phototransistor.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=led_phototransistor.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ir_array.SchDoc|Designator=Designator|SchDesignator=Designator|FileName=led_phototransistor.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=led_phototransistor.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ir_array.SchDoc|Designator=Designator|SchDesignator=Designator|FileName=led_phototransistor.SchDoc|SheetNumber=5|SymbolType=Normal|RawFileName=led_phototransistor.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=NoMainPathDocument|SourceDocument=ir_array.SchDoc|FileName=blue_pill.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=ir_array.SchDoc|FileName=bumper.SchDoc|SheetNumber=3
+Record=NoMainPathDocument|SourceDocument=ir_array.SchDoc|FileName=power_supplies.SchDoc|SheetNumber=2
