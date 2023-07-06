@@ -1,0 +1,23 @@
+Removed Pin From Net: NetName=IN1/G1 Pin=2-1kR-1
+Removed Pin From Net: NetName=IN1/G1 Pin=3-1kR-2
+Removed Pin From Net: NetName=IN2/G2 Pin=4-1kR-1
+Removed Pin From Net: NetName=IN1/G1 Pin=8-PIN-1-8
+Removed Pin From Net: NetName=IN1/G1 Pin=8-PIN-2-5
+Removed Pin From Net: NetName=IN2/G2 Pin=8-PIN-2-8
+Removed Pin From Net: NetName=IN1/G1 Pin=DIP20-3
+Removed Pin From Net: NetName=IN2/G2 Pin=DIP20-5
+Removed Pin From Net: NetName=IN1/G1 Pin=DIP20-9
+Change Net Name : Old Net Name=IN1/G1 New Net Name=G1
+Change Net Name : Old Net Name=IN2/G2 New Net Name=G2
+Added Pin To Net: NetName=IN1/G1 Pin=4-1kR-1
+Added Pin To Net: NetName=IN1/G1 Pin=8-PIN-2-8
+Added Pin To Net: NetName=IN1/G1 Pin=DIP20-3
+Added Pin To Net: NetName=IN1/G1 Pin=DIP20-5
+Added Net: Name=IN1/G1
+Added Pin To Net: NetName=IN4 Pin=2-1kR-1
+Added Pin To Net: NetName=IN4 Pin=8-PIN-1-8
+Added Pin To Net: NetName=IN4 Pin=DIP20-9
+Added Net: Name=IN4
+Added Pin To Net: NetName=Net3-1kR_2 Pin=3-1kR-2
+Added Pin To Net: NetName=Net3-1kR_2 Pin=8-PIN-2-5
+Added Net: Name=Net3-1kR_2
