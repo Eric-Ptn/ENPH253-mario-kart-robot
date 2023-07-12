@@ -38,17 +38,17 @@ void steer(Servo servo) {
   }
 
   current_position /= sum_of_weights; // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
-  int error = current_position - desired_center;
+  double error = current_position - desired_center;
   
   // compute PID components
   double dt = micros() - last_time;
 
   proportional = error;
-  integral = max(integral + error * dt, max_integral);
+  integral = min(integral + error * dt, max_integral);
   derivative = (last_error - error) / dt;
   last_error = error;
 
-  int correction_val = Kp * proportional + Ki * integral + Kd * derivative;
+  double correction_val = Kp * proportional + Ki * integral + Kd * derivative;
 
   // assumes that the servo is mounted at 90 degrees 
   servo.write(90 - correction_val);
