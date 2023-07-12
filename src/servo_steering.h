@@ -14,13 +14,14 @@ Potential improvements:
 */
 
 // variables for PID control, "static" ensures variables only have local file scope
-static int proportional = 0;
-static int integral = 0;
-static int derivative = 0;
-static int last_error = 0;
-static int max_integral = 100; // wind-up safety
+static double proportional = 0;
+static double integral = 0;
+static double derivative = 0;
+static double last_error = 0;
+static double max_integral = 100; // wind-up safety
 static int ir_readings[NUM_IR_SENSORS];
 static double desired_center = NUM_IR_SENSORS / 2 + 0.5; // position indices in weighted average start from 1, so add 0.5 to get the center
+static double last_time = micros(); // millis returns unsigned long be careful?
 
 void steer(Servo servo) {
   // analog readings
@@ -40,13 +41,17 @@ void steer(Servo servo) {
   int error = current_position - desired_center;
   
   // compute PID components
+  double dt = micros() - last_time;
+
   proportional = error;
-  integral = max(integral + error, max_integral);
-  derivative = last_error - error;
+  integral = max(integral + error * dt, max_integral);
+  derivative = (last_error - error) / dt;
   last_error = error;
 
   int correction_val = Kp * proportional + Ki * integral + Kd * derivative;
 
   // assumes that the servo is mounted at 90 degrees 
   servo.write(90 - correction_val);
+
+  last_time = micros();
 }
