@@ -2,15 +2,13 @@
 #include <servo_steering.h>
 #include <global_values.h>
 
-Servo servo;
-
 void setup() {
-  servo.attach(SERVO_PIN);
+  pinMode(SERVO_PIN, OUTPUT);
   for (int i = 0; i < NUM_IR_SENSORS; i++)  {
       pinMode(IR_PINS[i], INPUT);
   }
 }
 
 void loop() {
-  steer(servo);
+  tape_follow();
 }

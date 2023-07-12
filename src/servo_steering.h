@@ -1,6 +1,7 @@
 #include <Arduino.h>
-#include <Servo.h>
+#include <Wire.h>
 #include <global_values.h>
+#include <oled_display.h>
 
 /*
 This is just an initial attempt to code the control system for tape following (I would try to make this better but sick)
@@ -21,9 +22,8 @@ static double last_error = 0;
 static double max_integral = 100; // wind-up safety
 static int ir_readings[NUM_IR_SENSORS];
 static double desired_center = NUM_IR_SENSORS / 2 + 0.5; // position indices in weighted average start from 1, so add 0.5 to get the center
-static double last_time = micros(); // millis returns unsigned long be careful?
 
-void steer(Servo servo) {
+void tape_follow() {
   // analog readings
   for(int i = 0; i < NUM_IR_SENSORS; i++){
     ir_readings[i] = analogRead(IR_PINS[i]);
@@ -41,17 +41,31 @@ void steer(Servo servo) {
   double error = current_position - desired_center;
   
   // compute PID components
-  double dt = micros() - last_time;
-
   proportional = error;
-  integral = min(integral + error * dt, max_integral);
-  derivative = (last_error - error) / dt;
+  integral = min(integral + error, max_integral);
+  derivative = last_error - error;
   last_error = error;
 
   double correction_val = Kp * proportional + Ki * integral + Kd * derivative;
 
   // assumes that the servo is mounted at 90 degrees 
-  servo.write(90 - correction_val);
+  moving_servo(90 - correction_val);
 
-  last_time = micros();
+  // OLED display, feel free to comment out
+  String servo_info = "Servo write: " + String(90 - correction_val);
+  for(int i = 0; i < NUM_IR_SENSORS; i++) {
+    servo_info += ", Sensor " + String(i) + ": " + String(ir_readings[i]);
+  }
+
+  display_text(servo_info);
+}
+
+void moving_servo(double angle) {
+
+  // ~0 degrees is 2% duty cycle, ~180 degrees is 10% duty cycle
+  // servo.h does NOT work nicely, use this instead
+  double duty_cycle = (10 - 2)/(180 - 0) * (angle - 0) + 2;
+  int frequency_Hz = 50; // specified in servo datasheet
+
+  pwm_start(SERVO_PIN_PWM_NAME, frequency_Hz, duty_cycle, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
 }

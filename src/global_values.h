@@ -2,10 +2,11 @@
 #include <Arduino.h>
 
 // pins
-#define SERVO_PIN 9 
+#define SERVO_PIN PA6
+#define SERVO_PIN_PWM_NAME PA_6
 
 // IR sensor pins
-const byte IR_PINS[] = {A0, A1, A2, A3};
+const byte IR_PINS[] = {PA1, PA2, PA3, PA4};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // steering PID values
