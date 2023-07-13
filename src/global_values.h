@@ -33,3 +33,9 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 // motor speeds
 #define DEFAULT_MOTOR_DUTY_CYCLE 100
 #define MOTOR_CORRECTION_SCALING 2 // arbitrary, find experimentally
+
+// angle tolerance
+#define ANGLE_TOLERANCE_RADIANS 0.04
+
+// turning
+#define PROPORTIONAL_STEERING 1
