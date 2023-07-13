@@ -23,6 +23,17 @@ static double max_integral = 100; // wind-up safety
 static int ir_readings[NUM_IR_SENSORS];
 static double desired_center = NUM_IR_SENSORS / 2 + 0.5; // position indices in weighted average start from 1, so add 0.5 to get the center
 
+// https://components101.com/motors/mg996r-servo-motor-datasheet
+void moving_servo(double angle) {
+
+  // ~0 degrees is 2% duty cycle, ~180 degrees is 10% duty cycle
+  // servo.h does NOT work nicely, use this instead
+  double duty_cycle = (10.0 - 3.0)/(180.0 - 0.0) * (angle - 0.0) + 3.0;
+  int frequency_Hz = 50; // specified in servo datasheet
+
+  pwm_start(SERVO_PIN_PWM_NAME, frequency_Hz, duty_cycle, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
+}
+
 void tape_follow() {
   // analog readings
   for(int i = 0; i < NUM_IR_SENSORS; i++){
@@ -49,23 +60,13 @@ void tape_follow() {
   double correction_val = Kp * proportional + Ki * integral + Kd * derivative;
 
   // assumes that the servo is mounted at 90 degrees 
-  moving_servo(90 - correction_val);
+  moving_servo(90.0 - correction_val);
 
   // OLED display, feel free to comment out
-  String servo_info = "Servo write: " + String(90 - correction_val);
+  String servo_info = "Servo write: " + String(90.0 - correction_val) + " Duty cycle: " + String((10.0 - 3.0)/(180.0 - 0.0) * (90.0 - correction_val) + 3.0);
   for(int i = 0; i < NUM_IR_SENSORS; i++) {
     servo_info += ", Sensor " + String(i) + ": " + String(ir_readings[i]);
   }
 
   display_text(servo_info);
-}
-
-void moving_servo(double angle) {
-
-  // ~0 degrees is 2% duty cycle, ~180 degrees is 10% duty cycle
-  // servo.h does NOT work nicely, use this instead
-  double duty_cycle = (10 - 2)/(180 - 0) * (angle - 0) + 2;
-  int frequency_Hz = 50; // specified in servo datasheet
-
-  pwm_start(SERVO_PIN_PWM_NAME, frequency_Hz, duty_cycle, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
 }
