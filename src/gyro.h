@@ -76,10 +76,33 @@ double calculate_angle() {
   return angle;
 }
 
-void drive_straight_angle() {
-   
+void gyro_turn_absolute(double absolute_angle, double servo_steering_angle) {
+    servo_pwm(servo_steering_angle);
+    left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
+    right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
+
+    while(abs(gyro_readings[2] - absolute_angle) > ANGLE_TOLERANCE_RADIANS) read_gyro();
 }
 
-void gyro_turn(double turn_angle, double servo_steering_angle) {
-   
+void drive_straight_angle(double absolute_angle) {
+    read_gyro();
+    // scale steering angle based on deviation from desired angle, proportional control
+    double servo_adjustment_angle = min(gyro_readings[2] - absolute_angle, min(gyro_readings[2] - absolute_angle + 2 * M_PI, gyro_readings[2] - absolute_angle - 2 * M_PI));
+
+    gyro_turn_absolute(absolute_angle, servo_adjustment_angle); 
+}
+
+void gyro_turn_relative(double turn_angle, double servo_steering_angle) {
+
+   read_gyro();
+   double final_absolute_angle = gyro_readings[2] + turn_angle;
+
+   if (final_absolute_angle > M_PI) {
+    final_absolute_angle -= 2 * M_PI;
+   }
+   if (final_absolute_angle < -1 * M_PI) {
+    final_absolute_angle += 2 * M_PI;
+   }
+
+   gyro_turn_absolute(final_absolute_angle, servo_steering_angle);
 }
