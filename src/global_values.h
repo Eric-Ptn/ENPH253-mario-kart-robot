@@ -11,6 +11,14 @@
 #define RIGHT_MOTOR_PIN PA9
 #define RIGHT_MOTOR_PIN_PWM_NAME PA_9
 
+#define SONAR_TRIGGER_PIN_1 PB0 //I think any PWM pin should work for this
+#define SONAR_PIN_1_PWM_NAME PB_0
+#define SONAR_ECHO_PIN_1 PB13
+
+#define SONAR_TRIGGER_PIN_2 PB1
+#define SONAR_PIN_2_PWM_NAME PB_1  
+#define SONAR_ECHO_PIN_2 PA5
+
 
 // IR sensor pins
 const byte IR_PINS[] = {PA1, PA2, PA3, PA4};
