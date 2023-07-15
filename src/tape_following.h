@@ -41,6 +41,16 @@ void calibrate_tape_sensors() {
 
 }
 
+// steering PID values
+// get this to map to potentiometer values later for tuning?
+static int Kp = 50;
+static int Ki = 0;
+static int Kd = 0;
+
+
+/*
+Purpose: PID routine to follow tape. 
+*/
 void tape_follow_drive() {
 
   // analog readings
@@ -68,7 +78,7 @@ void tape_follow_drive() {
   double correction_val = Kp * proportional + Ki * integral + Kd * derivative;
 
   // assumes that the servo is mounted at 90 degrees 
-  servo_pwm(90.0 - correction_val);
+  servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
 
   // OLED display, feel free to comment out
   String servo_info = "Servo write: " + String(90.0 - correction_val) + " Duty cycle: " + String((10.0 - 3.0)/(180.0 - 0.0) * (90.0 - correction_val) + 3.0) + " Center: " + String(current_position);

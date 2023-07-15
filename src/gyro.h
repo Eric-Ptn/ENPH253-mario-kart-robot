@@ -15,6 +15,17 @@ static double angle = 0;
 static double angle_time = 0; // start angle time on first run?
 static double z_drift = 0;
 
+// PID vals
+static double derivative = 0;
+static double integral = 0;
+static double proportional = 0;
+static double last_error = 0;
+// PID gains 
+static int Kd_gyro = 0;
+static int Ki_gyro = 0;
+static int Kp_gyro = 1;
+
+
 void begin_gyro() {
     gyro.begin();
 }
@@ -31,6 +42,11 @@ void read_gyro() {
   // display_text(gyro_report);
 }
 
+/**
+Purpose: Measures the value of the x,y,z velocities when the gyro is stationary. Used for calibration.
+Alters: Saves the value of the velocity
+NOTE*: THE GYRO MUST BE STATIONARY WHEN CALIBRATING.
+*/
 void velocity_calibrate() {
   double coord_sums[] = {0, 0, 0};
 
@@ -46,6 +62,12 @@ void velocity_calibrate() {
   }
 }
 
+/*
+Purpose: Measures the drift of the z-angle of the gyro. If this drift is assumed to be linear, it can be subtracted from subsequent
+         angle measurements to reduce drift.
+Alters: 
+  -z-drift (should only be altered by this function): uses this variable to record the drift.
+*/
 void slow_calibrate() {
   read_gyro();
 
@@ -58,6 +80,11 @@ void slow_calibrate() {
   z_drift = (final_value - initial_value) / GYRO_SLOW_CALIBRATION_SECONDS;
 }
 
+/*
+Purpose: Calculates the angle that the gyro is oriented at. This angle is in the range -pi to pi.
+Alters: 
+  - angle:  angle of the gyro, starts at 0.
+*/
 double calculate_angle() {
   read_gyro();
 
@@ -77,14 +104,25 @@ double calculate_angle() {
   return angle;
 }
 
+/*
+Purpose: Turns to a specified angle.
+Params:
+  - absolute_angle: specifies the angle that the vehicle is to be turned to.
+  - servo_steering_angle: specifies the angle that the servo will steer the vehicle at (specifies the turning radius)
+*/
 void gyro_turn_absolute(double absolute_angle, double servo_steering_angle) {
-    servo_pwm(servo_steering_angle);
+    servo_pwm(SERVO_MOUNTING_ANGLE + servo_steering_angle);
     left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
     right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
 
     while(abs(gyro_readings[2] - absolute_angle) > ANGLE_TOLERANCE_RADIANS) read_gyro();
 }
 
+/*
+Purpose: Drives the vehicle straight, at a given angle (this version uses proportional control).
+Params:
+  - absolute_angle: the angle that the vehicle is driving at.
+*/
 void drive_straight_angle(double absolute_angle) {
     read_gyro();
     // scale steering angle based on deviation from desired angle, proportional control
@@ -93,6 +131,12 @@ void drive_straight_angle(double absolute_angle) {
     gyro_turn_absolute(absolute_angle, servo_adjustment_angle); 
 }
 
+/*
+Purpose: Turns vehicle BY a specified angle (the nuance is in the wording).
+Params:
+  - turning_angle: specifies the angle that the vehicle is to be turned BY.
+  - servo_steering_angle: specifies the angle that the servo will steer the vehicle at (specifies the turning radius)
+*/
 void gyro_turn_relative(double turn_angle, double servo_steering_angle) {
 
    read_gyro();
@@ -106,4 +150,35 @@ void gyro_turn_relative(double turn_angle, double servo_steering_angle) {
    }
 
    gyro_turn_absolute(final_absolute_angle, servo_steering_angle);
+}
+
+/*
+Purpose: Uses PID control and the gyro to drive along a given angle. 
+Params: 
+  - target_angle: the angle that we want to drive the vehicle at.
+*/
+void drive_straight_angle_pid (double target_angle) {
+
+  read_gyro();
+
+  double error = gyro_readings[2] - target_angle;
+
+  if (error > M_PI) {
+    error -= 2 * M_PI;
+  }
+
+  else if (error < -1 * M_PI ) {
+    error += 2 * M_PI;
+  }
+
+
+  proportional = error;
+  derivative = error - last_error;
+  integral += error; 
+
+  double correction_val = Kp_gyro * proportional + Kd_gyro * derivative + Ki_gyro * integral;
+
+  servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
+
+  
 }

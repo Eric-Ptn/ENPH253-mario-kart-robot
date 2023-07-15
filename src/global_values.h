@@ -1,5 +1,6 @@
 #pragma once  // avoid circular inclusion
 #include <Arduino.h>
+#include<math.h>
 
 // pins
 #define SERVO_PIN PA6
@@ -11,16 +12,19 @@
 #define RIGHT_MOTOR_PIN PA9
 #define RIGHT_MOTOR_PIN_PWM_NAME PA_9
 
+#define SONAR_TRIGGER_PIN_1 PB0 //I think any PWM pin should work for this
+#define SONAR_PIN_1_PWM_NAME PB_0
+#define SONAR_ECHO_PIN_1 PB13
+
+#define SONAR_TRIGGER_PIN_2 PB1
+#define SONAR_PIN_2_PWM_NAME PB_1  
+#define SONAR_ECHO_PIN_2 PA5
+
 
 // IR sensor pins
 const byte IR_PINS[] = {PA1, PA2, PA3, PA4};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
-// steering PID values
-// get this to map to potentiometer values later for tuning?
-#define Kp 50
-#define Ki 0
-#define Kd 0
 
 // gyro calibration values
 #define GYRO_FAST_CALIBRATION_RUNS 5000
@@ -42,3 +46,6 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // turning
 #define PROPORTIONAL_STEERING 1
+
+// mounting angle for servo
+#define SERVO_MOUNTING_ANGLE M_PI / 2
