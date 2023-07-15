@@ -4,6 +4,7 @@
 #include <Adafruit_SSD1306.h>
 #include <oled_display.h>
 #include <math.h>
+#include <global_values.h>
 
 Adafruit_MPU6050 gyro;
 
@@ -33,7 +34,7 @@ void read_gyro() {
 void velocity_calibrate() {
   double coord_sums[] = {0, 0, 0};
 
-  for(int i = 0; i < FAST_CALIBRATION_RUNS; i++){
+  for(int i = 0; i < GYRO_FAST_CALIBRATION_RUNS; i++){
       read_gyro();
       for(int i = 0; i < 3; i++) {
         coord_sums[i] += gyro_readings[i];
@@ -41,7 +42,7 @@ void velocity_calibrate() {
   }
 
   for(int i = 0; i < 3; i++) {
-    gyro_offsets[i] = coord_sums[i] / FAST_CALIBRATION_RUNS;
+    gyro_offsets[i] = coord_sums[i] / GYRO_FAST_CALIBRATION_RUNS;
   }
 }
 
@@ -49,12 +50,12 @@ void slow_calibrate() {
   read_gyro();
 
   double initial_value = gyro_readings[2];
-  delay(SLOW_CALIBRATION_SECONDS * 1000);
+  delay(GYRO_SLOW_CALIBRATION_SECONDS * 1000);
   
   read_gyro();
   double final_value = gyro_readings[2];
   
-  z_drift = (final_value - initial_value) / SLOW_CALIBRATION_SECONDS;
+  z_drift = (final_value - initial_value) / GYRO_SLOW_CALIBRATION_SECONDS;
 }
 
 double calculate_angle() {

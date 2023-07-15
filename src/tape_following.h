@@ -23,6 +23,23 @@ static double last_error = 0;
 static double max_integral = 100; // wind-up safety
 static int ir_readings[NUM_IR_SENSORS];
 static double desired_center = NUM_IR_SENSORS / 2 + 0.5; // position indices in weighted average start from 1, so add 0.5 to get the center
+static int ir_offsets[NUM_IR_SENSORS] = {0};
+
+void calibrate_tape_sensors() {
+
+  int sensor_sums[NUM_IR_SENSORS] = {0};
+
+  for(int i = 0; i < IR_CALIBRATION_RUNS; i++) {
+    for(int j = 0; j < NUM_IR_SENSORS; j++) {
+      sensor_sums[j] += analogRead(IR_PINS[j]);
+    }
+  }
+
+  for(int i = 0; i < NUM_IR_SENSORS; i++) {
+    ir_offsets[i] = sensor_sums[i] / IR_CALIBRATION_RUNS;
+  }
+
+}
 
 void tape_follow_drive() {
 
@@ -35,8 +52,8 @@ void tape_follow_drive() {
   double current_position = 0;
   int sum_of_weights = 0;
   for(int i = 1; i <= NUM_IR_SENSORS; i++){  // cannot be zero-indexed because it screws up the weighted average
-    current_position += ir_readings[i - 1] * i; // careful here! i is 1-indexed, ir_readings is 0-indexed
-    sum_of_weights += ir_readings[i - 1];
+    current_position += min((ir_readings[i - 1] - ir_offsets[i - 1]) * i, 0); // careful here! i is 1-indexed, ir_readings is 0-indexed
+    sum_of_weights += min((ir_readings[i - 1] - ir_offsets[i - 1]), 0);
   }
 
   current_position /= sum_of_weights; // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
@@ -54,9 +71,9 @@ void tape_follow_drive() {
   servo_pwm(90.0 - correction_val);
 
   // OLED display, feel free to comment out
-  String servo_info = "Servo write: " + String(90.0 - correction_val) + " Duty cycle: " + String((10.0 - 3.0)/(180.0 - 0.0) * (90.0 - correction_val) + 3.0);
+  String servo_info = "Servo write: " + String(90.0 - correction_val) + " Duty cycle: " + String((10.0 - 3.0)/(180.0 - 0.0) * (90.0 - correction_val) + 3.0) + " Center: " + String(current_position);
   for(int i = 0; i < NUM_IR_SENSORS; i++) {
-    servo_info += ", Sensor " + String(i) + ": " + String(ir_readings[i]);
+    servo_info += ", Sensor " + String(i) + ": " + String(min(ir_readings[i] - ir_offsets[i], 0));
   }
 
   display_text(servo_info);

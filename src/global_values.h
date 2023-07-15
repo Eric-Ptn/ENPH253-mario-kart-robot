@@ -23,8 +23,11 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define Kd 0
 
 // gyro calibration values
-#define FAST_CALIBRATION_RUNS 5000
-#define SLOW_CALIBRATION_SECONDS 15
+#define GYRO_FAST_CALIBRATION_RUNS 5000
+#define GYRO_SLOW_CALIBRATION_SECONDS 15
+
+// ir calibration
+#define IR_CALIBRATION_RUNS 5000
 
 // PWM frequencies
 #define SERVO_FREQUENCY_HZ 50 // THIS SHOULD NOT CHANGE

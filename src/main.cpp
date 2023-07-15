@@ -12,18 +12,22 @@ void setup() {
 
   // i2c adafruit components
   begin_oled();
-  begin_gyro();
+  // begin_gyro();
 
   // gyro calibration
-  velocity_calibrate();
-  display_text("fast calibration complete!");
-  delay(2000);
+  // velocity_calibrate();
+  // display_text("fast calibration complete!");
 
-  slow_calibrate();
-  display_text("slow calibration complete!");
-  delay(2000);
+  // delay(2000);
+
+  // slow_calibrate();
+  // display_text("slow calibration complete!");
+  // delay(2000);
+
+  // ir calibration
+  calibrate_tape_sensors();
 }
 
 void loop() {
-  calculate_angle();
+  tape_follow_drive();
 }
