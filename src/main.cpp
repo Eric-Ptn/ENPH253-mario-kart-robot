@@ -32,7 +32,7 @@ void setup() {
 
 void loop() {
   
-  long distance = measure_distance(1);
+  long     distance = measure_distance(1);
 
   display_text("Distance: " + String(distance));
 
