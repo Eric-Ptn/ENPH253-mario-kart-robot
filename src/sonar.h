@@ -17,7 +17,6 @@ Returns: Nothing.
 
 */
 void trigger_sonar (int sonar) {
-    int frequency = 14; // 1/60ms = 17Hz
     double duty_cycle = 1/60.0 * 100.0;
 
     if (sonar == 1) {

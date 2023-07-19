@@ -5,17 +5,22 @@
 #include <sonar.h>
 
 void setup() {
-  // // pins
+  // pins
   // pinMode(SERVO_PIN, OUTPUT);
   // for (int i = 0; i < NUM_IR_SENSORS; i++)  {
   //     pinMode(IR_PINS[i], INPUT);
   // }
 
-  pinMode(SONAR_TRIGGER_PIN_1, OUTPUT);
-  pinMode(SONAR_ECHO_PIN_1, INPUT);
+  pinMode(LEFT_MOTOR_PIN, OUTPUT);
+  pinMode(LEFT_REVERSE_MOTOR_PIN, OUTPUT);
+  pinMode(RIGHT_MOTOR_PIN, OUTPUT);
+  pinMode(RIGHT_REVERSE_MOTOR_PIN, OUTPUT);
+
+  // pinMode(SONAR_TRIGGER_PIN_1, OUTPUT);
+  // pinMode(SONAR_ECHO_PIN_1, INPUT);
 
   // // i2c adafruit components
-  begin_oled();
+  // begin_oled();
   // begin_gyro();
 
   // // gyro calibration
@@ -28,9 +33,20 @@ void setup() {
   // delay(2000);
 
   // ir calibration
-  calibrate_tape_sensors();
+  // calibrate_tape_sensors();
+  // delay(100000);
+
 }
 
 void loop() {
-  tape_follow_drive();
+  left_motor_PWM(60);
+  delay(5000);
+  left_motor_PWM(-60);
+  delay(5000);
+  right_motor_PWM(60);
+  delay(5000);
+  right_motor_PWM(-60);
+  delay(5000);
+  // display_text("hi");
+  // delay(3);
 }

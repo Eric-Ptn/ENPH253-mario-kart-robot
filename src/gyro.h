@@ -16,10 +16,10 @@ static double angle_time = 0; // start angle time on first run?
 static double z_drift = 0;
 
 // PID vals
-static double derivative = 0;
-static double integral = 0;
-static double proportional = 0;
-static double last_error = 0;
+static double gyro_derivative = 0;
+static double gyro_integral = 0;
+static double gyro_proportional = 0;
+static double gyro_last_error = 0;
 // PID gains 
 static int Kd_gyro = 0;
 static int Ki_gyro = 0;
@@ -172,9 +172,10 @@ void drive_straight_angle_pid (double target_angle) {
   }
 
 
-  proportional = error;
-  derivative = error - last_error;
-  integral += error; 
+  gyro_proportional = error;
+  gyro_derivative = error - last_error;
+  gyro_integral += error; 
+  gyro_last_error = error;
 
   double correction_val = Kp_gyro * proportional + Kd_gyro * derivative + Ki_gyro * integral;
 

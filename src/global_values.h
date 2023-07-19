@@ -3,26 +3,32 @@
 #include<math.h>
 
 // pins
-#define SERVO_PIN PA6
-#define SERVO_PIN_PWM_NAME PA_6
+#define SERVO_PIN PB9
+#define SERVO_PIN_PWM_NAME PB_9
 
-#define LEFT_MOTOR_PIN PA8
-#define LEFT_MOTOR_PIN_PWM_NAME PA_8
+#define LEFT_MOTOR_PIN PB0
+#define LEFT_MOTOR_PIN_PWM_NAME PB_0
+#define LEFT_REVERSE_MOTOR_PIN PB1
+#define LEFT_REVERSE_MOTOR_PIN_PWM_NAME PB_1
 
-#define RIGHT_MOTOR_PIN PA9
-#define RIGHT_MOTOR_PIN_PWM_NAME PA_9
+#define RIGHT_MOTOR_PIN PA6
+#define RIGHT_MOTOR_PIN_PWM_NAME PA_6
+#define RIGHT_REVERSE_MOTOR_PIN PA7
+#define RIGHT_REVERSE_MOTOR_PIN_PWM_NAME PA_7
 
-#define SONAR_TRIGGER_PIN_1 PB0 //I think any PWM pin should work for this
-#define SONAR_PIN_1_PWM_NAME PB_0
-#define SONAR_ECHO_PIN_1 PB13
+#define SONAR_TRIGGER_PIN_1 PA8 //I think any PWM pin should work for this
+#define SONAR_PIN_1_PWM_NAME PA_8
+#define SONAR_ECHO_PIN_1 PA11
 
-#define SONAR_TRIGGER_PIN_2 PB1
-#define SONAR_PIN_2_PWM_NAME PB_1  
-#define SONAR_ECHO_PIN_2 PA5
+#define SONAR_TRIGGER_PIN_2 PA9
+#define SONAR_PIN_2_PWM_NAME PA_9  
+#define SONAR_ECHO_PIN_2 PA12
+
+// gyro and OLED connect to I2C pins, PB6 and PB7
 
 
 // IR sensor pins
-const byte IR_PINS[] = {PA1, PA2, PA3, PA4};
+const byte IR_PINS[] = {PA0, PA1, PA3, PA4};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 
@@ -49,3 +55,6 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // mounting angle for servo
 #define SERVO_MOUNTING_ANGLE M_PI / 2
+
+// sonar
+#define frequency 17 // 1/60ms = 17Hz
