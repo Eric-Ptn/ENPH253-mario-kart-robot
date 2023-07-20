@@ -79,7 +79,7 @@ void tape_follow_drive() {
   }
 
   // integral = min(integral + error, max_integral);
-  derivative = last_error - error;
+  derivative = error - last_error;
   last_error = error;
 
   double correction_val = Kp * proportional + Kd * derivative + Ki * integral;

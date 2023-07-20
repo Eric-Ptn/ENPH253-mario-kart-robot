@@ -26,17 +26,21 @@ Params:
   - duty_cycle_percent: duty cycle of the pwm to the motor (determines motor speed)
 */
 void left_motor_PWM(double duty_cycle_percent) {
-  if (duty_cycle_percent = 0) {
+  if (duty_cycle_percent > 0) {
     pwm_start(LEFT_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, duty_cycle_percent, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
+    pwm_start(LEFT_REVERSE_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, 0, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
   } else {
+    pwm_start(LEFT_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, 0, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
     pwm_start(LEFT_REVERSE_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, -duty_cycle_percent, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
   }
 }
 
 void right_motor_PWM(double duty_cycle_percent) {
-  if (duty_cycle_percent = 0) {
+  if (duty_cycle_percent > 0) {
     pwm_start(RIGHT_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, duty_cycle_percent, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
+    pwm_start(RIGHT_REVERSE_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, 0, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
   } else {
+    pwm_start(RIGHT_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, 0, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
     pwm_start(RIGHT_REVERSE_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, -duty_cycle_percent, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
   }
 }

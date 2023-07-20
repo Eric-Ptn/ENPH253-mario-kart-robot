@@ -20,10 +20,11 @@ static double gyro_derivative = 0;
 static double gyro_integral = 0;
 static double gyro_proportional = 0;
 static double gyro_last_error = 0;
+static double gyro_max_integral = 65;
 // PID gains 
-static int Kd_gyro = 0;
-static int Ki_gyro = 0;
-static int Kp_gyro = 1;
+static double Kd_gyro = 0;
+static double Ki_gyro = 0;
+static double Kp_gyro = 0.3;
 
 
 void begin_gyro() {
@@ -99,8 +100,8 @@ double calculate_angle() {
 
   angle_time = millis();
 
-  String angle_text = "Angle: " + String(angle);
-  display_text(angle_text);
+  // String angle_text = "Angle: " + String(angle);
+  // display_text(angle_text);
   return angle;
 }
 
@@ -115,20 +116,7 @@ void gyro_turn_absolute(double absolute_angle, double servo_steering_angle) {
     left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
     right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
 
-    while(abs(gyro_readings[2] - absolute_angle) > ANGLE_TOLERANCE_RADIANS) read_gyro();
-}
-
-/*
-Purpose: Drives the vehicle straight, at a given angle (this version uses proportional control).
-Params:
-  - absolute_angle: the angle that the vehicle is driving at.
-*/
-void drive_straight_angle(double absolute_angle) {
-    read_gyro();
-    // scale steering angle based on deviation from desired angle, proportional control
-    double servo_adjustment_angle = min(gyro_readings[2] - absolute_angle, min(gyro_readings[2] - absolute_angle + 2 * M_PI, gyro_readings[2] - absolute_angle - 2 * M_PI));
-
-    gyro_turn_absolute(absolute_angle, servo_adjustment_angle); 
+    while(abs(angle - absolute_angle) > ANGLE_TOLERANCE_RADIANS) read_gyro(); // change to proper difference
 }
 
 /*
@@ -159,9 +147,7 @@ Params:
 */
 void drive_straight_angle_pid (double target_angle) {
 
-  read_gyro();
-
-  double error = gyro_readings[2] - target_angle;
+  double error = angle - target_angle;
 
   if (error > M_PI) {
     error -= 2 * M_PI;
@@ -174,10 +160,19 @@ void drive_straight_angle_pid (double target_angle) {
 
   gyro_proportional = error;
   gyro_derivative = error - last_error;
-  gyro_integral += error; 
+
+  if (gyro_integral + error < gyro_max_integral) {
+    gyro_integral += error;
+  } else {
+    gyro_integral = gyro_max_integral;
+  }
+
   gyro_last_error = error;
 
-  double correction_val = Kp_gyro * proportional + Kd_gyro * derivative + Ki_gyro * integral;
+  double correction_val = Kp_gyro * gyro_proportional + Kd_gyro * gyro_derivative + Ki_gyro * gyro_integral;
+
+  String angle_text = "Angle: " + String(angle) + " Correction: " + String(correction_val) + " Error: " + String(error);
+  display_text(angle_text);
 
   servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
 
