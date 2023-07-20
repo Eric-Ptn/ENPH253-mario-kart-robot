@@ -109,35 +109,39 @@ double calculate_angle() {
 Purpose: Turns to a specified angle.
 Params:
   - absolute_angle: specifies the angle that the vehicle is to be turned to.
-  - servo_steering_angle: specifies the angle that the servo will steer the vehicle at (specifies the turning radius)
+  - servo_steering_angle: absolute value of angle that the servo will steer the vehicle at (specifies the turning radius)
 */
 void gyro_turn_absolute(double absolute_angle, double servo_steering_angle) {
+
+    // need to steer servo to correct direction
+    double angle_difference = circular_correction(absolute_angle - angle);
+
+    if (angle_difference < 0) {
+      servo_steering_angle *= -1;
+    }
     servo_pwm(SERVO_MOUNTING_ANGLE + servo_steering_angle);
     left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
     right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
 
-    while(abs(angle - absolute_angle) > ANGLE_TOLERANCE_RADIANS) read_gyro(); // change to proper difference
+
+    while (abs(angle_difference) > ANGLE_TOLERANCE_RADIANS) {
+      calculate_angle();
+      angle_difference = circular_correction(absolute_angle - angle);
+    }
+
 }
 
 /*
 Purpose: Turns vehicle BY a specified angle (the nuance is in the wording).
 Params:
   - turning_angle: specifies the angle that the vehicle is to be turned BY.
-  - servo_steering_angle: specifies the angle that the servo will steer the vehicle at (specifies the turning radius)
+  - servo_steering_angle: absolute value of angle that the servo will steer the vehicle at (specifies the turning radius)
 */
 void gyro_turn_relative(double turn_angle, double servo_steering_angle) {
 
-   read_gyro();
-   double final_absolute_angle = gyro_readings[2] + turn_angle;
-
-   if (final_absolute_angle > M_PI) {
-    final_absolute_angle -= 2 * M_PI;
-   }
-   if (final_absolute_angle < -1 * M_PI) {
-    final_absolute_angle += 2 * M_PI;
-   }
-
+   double final_absolute_angle = circular_correction(angle + turn_angle);
    gyro_turn_absolute(final_absolute_angle, servo_steering_angle);
+
 }
 
 /*
@@ -147,22 +151,15 @@ Params:
 */
 void drive_straight_angle_pid (double target_angle) {
 
-  double error = angle - target_angle;
-
-  if (error > M_PI) {
-    error -= 2 * M_PI;
-  }
-
-  else if (error < -1 * M_PI ) {
-    error += 2 * M_PI;
-  }
-
+  double error = circular_correction(target_angle - angle);
 
   gyro_proportional = error;
   gyro_derivative = error - last_error;
 
-  if (gyro_integral + error < gyro_max_integral) {
+  if (abs(gyro_integral + error) < gyro_max_integral) {
     gyro_integral += error;
+  } else if (gyro_integral + error < 0) {
+    gyro_integral = -1 * gyro_max_integral;
   } else {
     gyro_integral = gyro_max_integral;
   }
@@ -174,7 +171,18 @@ void drive_straight_angle_pid (double target_angle) {
   String angle_text = "Angle: " + String(angle) + " Correction: " + String(correction_val) + " Error: " + String(error);
   display_text(angle_text);
 
-  servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
+  servo_pwm(SERVO_MOUNTING_ANGLE + correction_val);
+}
 
-  
+double circular_correction(double angle) {
+
+  if (angle > M_PI) {
+    angle -= 2 * M_PI;
+  }
+
+  else if (angle < -1 * M_PI ) {
+    angle += 2 * M_PI;
+  }
+
+  return angle;
 }

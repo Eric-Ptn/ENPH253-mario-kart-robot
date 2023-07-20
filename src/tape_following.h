@@ -67,13 +67,15 @@ void tape_follow_drive() {
   }
 
   current_position /= sum_of_weights; // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
-  double error = current_position - desired_center; // (ranges from 0 to desired_center - 1)
+  double error = desired_center - current_position; // (ranges from 0 to desired_center - 1)
   
   // compute PID components
   proportional = error;
 
-  if (integral + error < max_integral) {
+  if (abs(integral + error) < max_integral) {
     integral += error;
+  } else if (integral + error < 0) {
+    integral = -1 * max_integral;
   } else {
     integral = max_integral;
   }
@@ -85,7 +87,7 @@ void tape_follow_drive() {
   double correction_val = Kp * proportional + Kd * derivative + Ki * integral;
   // double correction_val = 1;
 
-  servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
+  servo_pwm(SERVO_MOUNTING_ANGLE + correction_val);
 
   // OLED display, feel free to comment out
   String servo_info = "Servo write: " + String(SERVO_MOUNTING_ANGLE - correction_val) + " correction value: " + String(correction_val) + " error: " + String(error);
