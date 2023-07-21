@@ -1,3 +1,4 @@
+#pragma once
 #include <Arduino.h>
 #include <global_values.h>
 #include <math.h>
@@ -35,6 +36,14 @@ void left_motor_PWM(double duty_cycle_percent) {
   }
 }
 
+void left_motor_steering_drive(double steering_angle, bool reverse) {
+  if (reverse) {
+    left_motor_PWM(-1 * (DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE)));
+  } else {
+    left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE));
+  }
+}
+
 void right_motor_PWM(double duty_cycle_percent) {
   if (duty_cycle_percent > 0) {
     pwm_start(RIGHT_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, duty_cycle_percent, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
@@ -42,5 +51,13 @@ void right_motor_PWM(double duty_cycle_percent) {
   } else {
     pwm_start(RIGHT_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, 0, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
     pwm_start(RIGHT_REVERSE_MOTOR_PIN_PWM_NAME, MOTOR_FREQUENCY_HZ, -duty_cycle_percent, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
+  }
+}
+
+void right_motor_steering_drive(double steering_angle, bool reverse) {
+  if (reverse) {
+    right_motor_PWM(-1 * (DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE)));
+  } else {
+    right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE));
   }
 }

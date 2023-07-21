@@ -5,6 +5,7 @@
 #include <oled_display.h>
 #include <math.h>
 #include <global_values.h>
+#include <pwm_driving.h>
 
 Adafruit_MPU6050 gyro;
 
@@ -105,6 +106,19 @@ double calculate_angle() {
   return angle;
 }
 
+double circular_correction(double angle) {
+
+  if (angle > M_PI) {
+    angle -= 2 * M_PI;
+  }
+
+  else if (angle < -1 * M_PI ) {
+    angle += 2 * M_PI;
+  }
+
+  return angle;
+}
+
 /*
 Purpose: Turns to a specified angle.
 Params:
@@ -120,15 +134,16 @@ void gyro_turn_absolute(double absolute_angle, double servo_steering_angle) {
       servo_steering_angle *= -1;
     }
     servo_pwm(SERVO_MOUNTING_ANGLE + servo_steering_angle);
-    left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
-    right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
+    left_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false);
+    right_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false);
 
 
     while (abs(angle_difference) > ANGLE_TOLERANCE_RADIANS) {
       calculate_angle();
       angle_difference = circular_correction(absolute_angle - angle);
+      String angle_text = "Angle: " + String(angle) + " Difference: " + String(angle_difference);
+      display_text(angle_text);
     }
-
 }
 
 /*
@@ -172,17 +187,6 @@ void drive_straight_angle_pid (double target_angle) {
   display_text(angle_text);
 
   servo_pwm(SERVO_MOUNTING_ANGLE + correction_val);
-}
-
-double circular_correction(double angle) {
-
-  if (angle > M_PI) {
-    angle -= 2 * M_PI;
-  }
-
-  else if (angle < -1 * M_PI ) {
-    angle += 2 * M_PI;
-  }
-
-  return angle;
+  left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
+  right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
 }

@@ -24,9 +24,19 @@ static double max_integral = 1.5; // wind-up safety
 static int ir_readings[NUM_IR_SENSORS];
 static double desired_center = NUM_IR_SENSORS / 2 + 0.5; // position indices in weighted average start from 1, so add 0.5 to get the center
 static int ir_offsets[NUM_IR_SENSORS] = {0};
+static int ir_scaling[NUM_IR_SENSORS] = {0};
 
-void calibrate_tape_sensors() {
+void constant_offset_tape_sensors() {
 
+  for(int i = 0; i < IR_CALIBRATION_RUNS; i++) {
+    for(int j = 0; j < NUM_IR_SENSORS; j++) {
+      ir_offsets[j] += analogRead(IR_PINS[j]) / IR_CALIBRATION_RUNS - WHITE_THRESHOLD / IR_CALIBRATION_RUNS;
+    }
+  }
+
+}
+
+void scaling_offset_tape_sensors() {
   int sensor_sums[NUM_IR_SENSORS] = {0};
 
   for(int i = 0; i < IR_CALIBRATION_RUNS; i++) {
@@ -35,10 +45,14 @@ void calibrate_tape_sensors() {
     }
   }
 
+  int sensor_averages[NUM_IR_SENSORS] = {0};
+  for(int i = 0; i < NUM_IR_SENSORS; i++) {
+
+  }
+
   for(int i = 0; i < NUM_IR_SENSORS; i++) {
     ir_offsets[i] = sensor_sums[i] / IR_CALIBRATION_RUNS - 100; // add ten to account for noise in white bg
   }
-
 }
 
 // steering PID values
@@ -98,6 +112,6 @@ void tape_follow_drive() {
   display_text(servo_info);
 
   // drive motors, slow down based on how far off you are (ex. turn)
-  left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(correction_val));
-  right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(correction_val));
+  left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
+  right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
 }

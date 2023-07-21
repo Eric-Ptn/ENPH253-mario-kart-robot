@@ -38,14 +38,15 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
+#define WHITE_THRESHOLD 75
 
 // PWM frequencies
 #define SERVO_FREQUENCY_HZ 50 // THIS SHOULD NOT CHANGE
-#define MOTOR_FREQUENCY_HZ 1000 // this can change
+#define MOTOR_FREQUENCY_HZ 100 // this can change
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 100
-#define MOTOR_CORRECTION_SCALING 2 // arbitrary, find experimentally
+#define DEFAULT_MOTOR_DUTY_CYCLE 50
+#define MOTOR_CORRECTION_SCALING 20 // arbitrary, find experimentally
 
 // angle tolerance
 #define ANGLE_TOLERANCE_RADIANS 0.04

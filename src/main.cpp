@@ -7,9 +7,9 @@
 void setup() {
   // pins
   pinMode(SERVO_PIN, OUTPUT);
-  // for (int i = 0; i < NUM_IR_SENSORS; i++)  {
-  //     pinMode(IR_PINS[i], INPUT);
-  // }
+  for (int i = 0; i < NUM_IR_SENSORS; i++)  {
+      pinMode(IR_PINS[i], INPUT);
+  }
 
   pinMode(LEFT_MOTOR_PIN, OUTPUT);
   pinMode(LEFT_REVERSE_MOTOR_PIN, OUTPUT);
@@ -33,15 +33,23 @@ void setup() {
   delay(2000);
 
   // ir calibration
-  // calibrate_tape_sensors();
-  // delay(100000);
-  servo_pwm(0);
-  delay(20000);
+  // constant_offset_tape_sensors();
 }
 
 void loop() {
-  calculate_angle();
-  drive_straight_angle_pid(1);
+  calculate_angle(); // needs to be called in EVERY loop iteration, regardless of stage to keep angle reading correct
+  drive_straight_angle_pid(0);
+  // left_motor_PWM(30);
+  // right_motor_PWM(30);
+  // tape_follow_drive();
+  // calculate_angle();
+  // drive_straight_angle_pid(1);
+  // if (millis() - last_time > 5000) {
+  //   gyro_turn_absolute(1, 0.4);
+  //   last_time = millis();
+  // } else {
+  //   display_text("done turn!");
+  // }
   // left_motor_PWM(60);
   // servo_pwm(M_PI);
   // delay(5000);

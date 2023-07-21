@@ -20,5 +20,4 @@ void display_text(String text) {
   display_handler.setCursor(0,0);
   display_handler.println(text);
   display_handler.display();
-  delay(100);
 }
