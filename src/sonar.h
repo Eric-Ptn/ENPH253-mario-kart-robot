@@ -16,15 +16,15 @@ Params:
 Returns: Nothing.
 
 */
-void trigger_sonar (int sonar) {
-    double duty_cycle = 1/60.0 * 100.0;
+void trigger_sonar (int sonar_trigger_pin) {
+    double duty_cycle_percent = 1/60.0 * 100.0;
 
-    if (sonar == 1) {
-        pwm_start(SONAR_PIN_1_PWM_NAME, frequency, duty_cycle, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
+    if (sonar_trigger_pin == BRIDGE_SONAR_TRIGGER) {
+        pwm_start(BRIDGE_SONAR_PWM_NAME, SONAR_FREQUENCY, duty_cycle_percent, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
     }
 
-    else if (sonar == 2) {
-        pwm_start(SONAR_PIN_2_PWM_NAME, frequency, duty_cycle, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
+    else if (sonar_trigger_pin == WALL_SONAR_TRIGGER) {
+        pwm_start(WALL_SONAR_PWM_NAME, SONAR_FREQUENCY, duty_cycle_percent, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
     }
     
 }
@@ -39,20 +39,21 @@ Params:
  Returns: The distance between sonar module and obstruction.
 
  Note: Using longs since I don't think we need the precision of double here - Tanishq
+ Note: aint no way - Eric
 */
-long measure_distance (int sonar) {
+long measure_distance (int sonar_echo_pin) {
     long duration = 10000;
 
-    if (sonar == 1) {
-        duration = pulseIn(SONAR_ECHO_PIN_1, HIGH);
+    if (sonar_echo_pin == BRIDGE_SONAR_ECHO) {
+        duration = pulseIn(BRIDGE_SONAR_ECHO, HIGH);
     }
 
-    if (sonar == 2) {
-        duration = pulseIn(SONAR_ECHO_PIN_2, HIGH);
+    if (sonar_echo_pin == WALL_SONAR_ECHO) {
+        duration = pulseIn(WALL_SONAR_ECHO, HIGH);
     }
     
 
-    long distance = duration * 0.0343 / 2.0;
+    long distance = duration * 0.0343 / 2.0; // distance is time taken for pulse to return * speed of sound / 2 (since it travels to and from the object)
 
     return distance;
 }

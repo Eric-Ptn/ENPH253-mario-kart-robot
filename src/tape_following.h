@@ -62,12 +62,20 @@ static double Ki = 0;
 static double Kd = 0.075;
 
 
+// give processed ir reading for an IR tape sensor pin, zero-indexed
+double processed_ir_reading(int i) {
+  for(int i = 0; i < NUM_IR_SENSORS; i++) {
+    ir_readings[i] = analogRead(IR_PINS[i]) - ir_offsets[i];
+  }
+  return min(int(analogRead(IR_PINS[i])) - ir_offsets[i], 0);
+}
+
 /*
 Purpose: PID routine to follow tape. 
 */
 void tape_follow_drive() {
 
-  // analog readings
+  // raw analog readings
   for(int i = 0; i < NUM_IR_SENSORS; i++){
     ir_readings[i] = analogRead(IR_PINS[i]);
   }

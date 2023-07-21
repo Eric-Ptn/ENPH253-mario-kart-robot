@@ -72,7 +72,6 @@ Alters:
 */
 void slow_calibrate() {
   read_gyro();
-
   double initial_value = gyro_readings[2];
   delay(GYRO_SLOW_CALIBRATION_SECONDS * 1000);
   
@@ -169,7 +168,7 @@ void drive_straight_angle_pid (double target_angle) {
   double error = circular_correction(target_angle - angle);
 
   gyro_proportional = error;
-  gyro_derivative = error - last_error;
+  gyro_derivative = error - gyro_last_error;
 
   if (abs(gyro_integral + error) < gyro_max_integral) {
     gyro_integral += error;
