@@ -24,11 +24,14 @@
 #define WALL_SONAR_PWM_NAME PA_9  
 #define WALL_SONAR_ECHO PA12
 
+#define CALIBRATION_PIN PB3
+#define RUNNING_PIN PB4
+
 // gyro and OLED connect to I2C pins, PB6 and PB7
 
 
 // IR sensor pins
-const byte IR_PINS[] = {PA0, PA1, PA3, PA4};
+const byte IR_PINS[] = {PA1, PA0, PA4, PA3};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // gyro calibration values
@@ -37,23 +40,26 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
-#define WHITE_THRESHOLD 75
+#define WHITE_THRESHOLD 100
 
 // PWM frequencies
 #define SERVO_FREQUENCY_HZ 50 // THIS SHOULD NOT CHANGE
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 50
-#define MOTOR_CORRECTION_SCALING 20 // arbitrary, find experimentally
+#define DEFAULT_MOTOR_DUTY_CYCLE 30
+#define MOTOR_CORRECTION_SCALING 10 // arbitrary, find experimentally
 
 // angle tolerance for ending a gyro turn
 #define ANGLE_TOLERANCE_RADIANS 0.04
 
 // mounting angle for servo
-#define SERVO_MOUNTING_ANGLE M_PI / 2
+#define SERVO_MOUNTING_ANGLE M_PI/6
 
 // sonar
 #define SONAR_FREQUENCY 17 // 1/60ms = 17Hz
 #define BRIDGE_DISTANCE 20
 #define WALL_DISTANCE 20
+
+// accelerometer falling threshold
+#define FALLING_ACCELERATION 3
