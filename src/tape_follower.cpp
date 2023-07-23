@@ -80,7 +80,7 @@ void TapeFollower::follow_tape() {
   }
 
   double error;
-  if (sum_of_weights > 0) {
+  if (sum_of_weights < 0) {
     current_position /= sum_of_weights; // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
     error = desired_center - current_position; // (ranges from 0 to desired_center - 1)
   } else {
@@ -107,16 +107,12 @@ void TapeFollower::follow_tape() {
   motors::servo_pwm(SERVO_MOUNTING_ANGLE + correction_val);
 
   // OLED display, feel free to comment out
-  // String servo_info = "Servo write: " + String(SERVO_MOUNTING_ANGLE - correction_val) + " correction value: " + String(correction_val) + " error: " + String(error);
-  // for(int i = 0; i < NUM_IR_SENSORS; i++) {
-  //   if (ir_readings[i] * ir_scaling[i] - ir_offsets[i] > 0) {
-  //     servo_info += ", Sensor " + String(i) + ": 0";
-  //   } else {
-  //     servo_info += ", Sensor " + String(i) + ": " + String(ir_readings[i] * ir_scaling[i] - ir_offsets[i]);
-  //   }
-  // }
+  String servo_info = "Servo write: " + String(SERVO_MOUNTING_ANGLE - correction_val) + " correction value: " + String(correction_val) + " position: " + String(current_position);
+  for(int i = 0; i < NUM_IR_SENSORS; i++) {
+    servo_info += ", Sensor " + String(i) + ": " + String(processed_ir_reading(i));
+  }
 
-  // OLED::display_text(servo_info);
+  OLED::display_text(servo_info);
 
   // drive motors, slow down based on how far off you are (ex. turn)
   motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);

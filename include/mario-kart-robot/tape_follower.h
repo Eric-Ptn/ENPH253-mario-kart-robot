@@ -19,9 +19,9 @@ class TapeFollower {
         double max_integral; // wind-up safety
 
         // tape following PID gains
-        static const double Kp;
-        static const double Kd;
-        static const double Ki;
+        const double Kp = TAPE_FOLLOWING_KP;
+        const double Kd = TAPE_FOLLOWING_KD;
+        const double Ki = TAPE_FOLLOWING_KI;
 
     public:
         TapeFollower();
