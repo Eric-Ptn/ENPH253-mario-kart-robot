@@ -31,7 +31,7 @@ class TapeFollower {
 
         // calibration
         void constant_offset_calibration();
-        void scaling_offset_calibration();
+        void scaling_offset_calibration(); // recommended, scales sensitivity of each sensor to be about the same
 
         // tape following
         /*

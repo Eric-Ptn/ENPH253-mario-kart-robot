@@ -1,4 +1,3 @@
-#pragma once
 #include <Arduino.h>
 #include <math.h>
 #include <mario-kart-robot\motors.h>
