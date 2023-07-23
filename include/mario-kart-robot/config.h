@@ -1,6 +1,8 @@
 #pragma once  // avoid circular inclusion
 #include <Arduino.h>
-#include<math.h>
+#include <math.h>
+
+// TODO: add PID constants
 
 // pins
 #define SERVO_PIN PB9
@@ -34,6 +36,18 @@
 const byte IR_PINS[] = {PA1, PA0, PA4, PA3};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
+// gyro PID values
+#define GYRO_KP 0
+#define GYRO_KI 0
+#define GYRO_KD 0
+#define GYRO_MAX_INTEGRAL 0
+
+// tape following PID values
+#define TAPE_FOLLOWING_KP 0.2
+#define TAPE_FOLLOWING_KI 0
+#define TAPE_FOLLOWING_KD 0
+#define TAPE_FOLLOWING_MAX_INTEGRAL 0
+
 // gyro calibration values
 #define GYRO_FAST_CALIBRATION_RUNS 5000
 #define GYRO_SLOW_CALIBRATION_SECONDS 15
@@ -42,7 +56,7 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define IR_CALIBRATION_RUNS 5000
 #define WHITE_THRESHOLD 100
 
-// PWM frequencies
+// PWM frequencies (https://components101.com/motors/mg996r-servo-motor-datasheet)
 #define SERVO_FREQUENCY_HZ 50 // THIS SHOULD NOT CHANGE
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
@@ -63,3 +77,8 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // accelerometer falling threshold
 #define FALLING_ACCELERATION 3
+
+// OLED
+const int SCREEN_WIDTH = 128;
+const int SCREEN_HEIGHT = 64;
+const int OLED_RESET = -1; // This display does not have a reset pin accessible
