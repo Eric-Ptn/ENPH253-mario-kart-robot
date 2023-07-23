@@ -1,8 +1,14 @@
 #include <Arduino.h>
-#include <tape_following.h>
-#include <global_values.h>
-#include <gyro.h>
-#include <sonar.h>
+#include <mario-kart-robot\config.h>
+#include <mario-kart-robot\motors.h>
+#include <mario-kart-robot\imu.h>
+#include <mario-kart-robot\tape_follower.h>
+#include <mario-kart-robot\oled_display.h>
+
+// TODO: use protothreads to do gyro readings and course navigation "simultaneously"
+
+IMU mpu6050;
+TapeFollower tape_follower;
 
 void setup() {
   // pins
@@ -25,24 +31,22 @@ void setup() {
 
 
   // i2c adafruit components
-  begin_oled();
-  begin_gyro();
+  OLED::begin_oled();
+  mpu6050.begin_imu();
 
   // ir calibration
-  scaling_offset_tape_sensors();
+  tape_follower.scaling_offset_calibration();
 
-  servo_pwm(SERVO_MOUNTING_ANGLE);
+  motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 
 }
 
-// int i = 0;
-// int j = 250;
+
 void loop() {
-  tape_follow_drive();
-  // i++;
-  // int z = min(i,j);
-  // display_text(String(z));
+  tape_follower.follow_tape();
 }
+
+
 // TEST GYRO STRAIGHT PID
 
 // void loop() {
