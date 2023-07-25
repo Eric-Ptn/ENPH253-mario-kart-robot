@@ -80,7 +80,7 @@ void TapeFollower::follow_tape() {
   }
 
   double error;
-  if (sum_of_weights < 0) {
+  if (sum_of_weights < -10) {
     current_position /= sum_of_weights; // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
     error = desired_center - current_position; // (ranges from 0 to desired_center - 1)
   } else {
@@ -119,23 +119,23 @@ void TapeFollower::follow_tape() {
   motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
 }
 
-bool TapeFollower::seeing_white() {
-  for (int i = 0; i < NUM_IR_SENSORS; i++) {
-    if (processed_ir_reading(i) < 0) {
-      return false;
-    }
-  }
+// bool TapeFollower::seeing_white() {
+//   for (int i = 0; i < NUM_IR_SENSORS; i++) {
+//     if (processed_ir_reading(i) < 0) {
+//       return false;
+//     }
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 
-bool TapeFollower::seeing_black() {
-  for (int i = 0; i < NUM_IR_SENSORS; i++) {
-    if (processed_ir_reading(i) == 0) {
-      return false;
-    }
-  }
+// bool TapeFollower::seeing_black() {
+//   for (int i = 0; i < NUM_IR_SENSORS; i++) {
+//     if (processed_ir_reading(i) == 0) {
+//       return false;
+//     }
+//   }
   
-  return true;
-}
+//   return true;
+// }

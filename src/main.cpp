@@ -10,6 +10,8 @@
 IMU mpu6050;
 TapeFollower tape_follower;
 
+TwoWire secondaryI2Cballs = TwoWire(PB11, PB10);
+
 void setup() {
   // pins
   pinMode(SERVO_PIN, OUTPUT);
@@ -29,18 +31,28 @@ void setup() {
 
   // gyro and OLED connect to I2C pins, PB6 and PB7, but don't need to be included here
 
+  OLED::display_handler = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &secondaryI2Cballs, OLED_RESET);
 
   // i2c adafruit components
   OLED::begin_oled();
-  mpu6050.begin_imu();
+
+
+  // mpu6050.begin_imu(secondaryI2Cballs);
+  // OLED::display_text("hi");
+  // delay(400);
+  // gyro calibration
+  // OLED::display_text("fast calibration...");
+  // mpu6050.reading_calibrate();
+  // OLED::display_text("slow calibration...");
+  // mpu6050.z_drift_calibrate();
 
   // ir calibration
   tape_follower.scaling_offset_calibration();
-
   motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 
 }
 
+// TEST TAPE FOLLOWING PID
 
 void loop() {
   tape_follower.follow_tape();
@@ -50,8 +62,13 @@ void loop() {
 // TEST GYRO STRAIGHT PID
 
 // void loop() {
-//   calculate_angle();
-//   drive_straight_angle_pid(0);
+
+//   mpu6050.read_imu();
+//   delay(500);
+//   // mpu6050.calculate_z_angle();
+
+//   // IMU::GyroMovement straight1(mpu6050);
+//   // straight1.gyro_drive_straight_angle(0, TapeFollower::seeing_white);
 // }
 
 // TEST GYRO TURNING

@@ -1,3 +1,4 @@
+#pragma once
 namespace motors {
     /*
     Purpose: Moves the servo to a specified angle.

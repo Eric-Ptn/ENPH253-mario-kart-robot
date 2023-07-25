@@ -2,7 +2,8 @@
 #include <mario-kart-robot\config.h>
 
 namespace OLED {
-  Adafruit_SSD1306 display_handler = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+  // TwoWire secondaryI2C = TwoWire(PB11, PB10);
+  Adafruit_SSD1306 display_handler;
 
   void begin_oled(){
     display_handler.begin(SSD1306_SWITCHCAPVCC, 0x3C);

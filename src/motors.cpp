@@ -10,7 +10,14 @@ namespace motors {
     // ~0 radians is 2% duty cycle, ~pi radians is 12.5% duty cycle
     // servo.h does NOT work nicely, use this instead
 
-    double duty_cycle_percent = (12.5 - 2.0)/(M_PI - 0.0) * (angle - 0.0) + 2.0;
+    double limited_angle = angle;
+    if (angle > SERVO_MAX_STEER + SERVO_MOUNTING_ANGLE) {
+        limited_angle = SERVO_MAX_STEER + SERVO_MOUNTING_ANGLE;
+    } else if (angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
+        limited_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
+    }
+
+    double duty_cycle_percent = (12.5 - 2.0)/(M_PI - 0.0) * (limited_angle - 0.0) + 2.0;
 
     pwm_start(SERVO_PIN_PWM_NAME, SERVO_FREQUENCY_HZ, duty_cycle_percent / 100 * 65536, TimerCompareFormat_t::RESOLUTION_16B_COMPARE_FORMAT);
   }

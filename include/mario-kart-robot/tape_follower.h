@@ -1,3 +1,4 @@
+#pragma once
 #include "config.h"
 
 class TapeFollower {
@@ -40,6 +41,6 @@ class TapeFollower {
         void follow_tape();
 
         // sensor events
-        bool seeing_white();
-        bool seeing_black();
+        static bool seeing_white();
+        static bool seeing_black();
 };

@@ -1,3 +1,4 @@
+#pragma once
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include "config.h"
@@ -34,7 +35,7 @@ class IMU{
 
     public:
         // BASIC FUNCTIONS *****************************************************************************************************************
-        void begin_imu();
+        void begin_imu(TwoWire i2c);
         void read_imu();
 
         /*
@@ -59,37 +60,51 @@ class IMU{
         void z_drift_calibrate();
 
         // MOVEMENT ************************************************************************************************************************
+
         
-        /*
-        Purpose: Turns to a specified angle.
-        Params:
-        - absolute_angle: specifies the angle that the vehicle is to be turned to.
-        - servo_steering_angle: absolute value of angle that the servo will steer the vehicle at (specifies the turning radius)
-        */
-        void gyro_turn_absolute(double absolute_angle, double servo_steering_angle);
-
-        /*
-        Purpose: Turns vehicle BY a specified angle (the nuance is in the wording).
-        Params:
-        - turning_angle: specifies the angle that the vehicle is to be turned BY.
-        - servo_steering_angle: absolute value of angle that the servo will steer the vehicle at (specifies the turning radius)
-        */
-        void gyro_turn_relative(double turn_angle, double servo_steering_angle);
-
-        /*
-        Purpose: Uses PID control and the gyro to drive along a given angle. 
-        Params: 
-        - target_angle: the angle to drive the vehicle at.
-        - stop_condition: a function that returns true when the vehicle should stop driving.
-        */
-        void gyro_drive_straight_angle(double target_angle, bool (*stop_condition)());
 
         // SENSOR EVENTS *******************************************************************************************************************
         
         // detects accelerometer spike to judge whether robot is falling or not
-        bool robot_falling();
+        static bool robot_falling();
 
         // HELPERS *************************************************************************************************************************
-        double circular_correction(double angle);
+        static double circular_correction(double angle);
+
+        // OBJECTS *************************************************************************************************************************
+        
+        // gyro turn object
+        class GyroMovement {
+            private:
+                bool completed = false;
+                IMU* imu;
+
+            public:
+                GyroMovement(IMU &parent_imu);
+
+                /*
+                Purpose: Turns to a specified angle.
+                Params:
+                - absolute_angle: specifies the angle that the vehicle is to be turned to.
+                - servo_steering_angle: absolute value of angle that the servo will steer the vehicle at (specifies the turning radius)
+                */
+                void gyro_turn_absolute(double absolute_angle, double servo_steering_angle);
+
+                /*
+                Purpose: Turns vehicle BY a specified angle (the nuance is in the wording).
+                Params:
+                - turning_angle: specifies the angle that the vehicle is to be turned BY.
+                - servo_steering_angle: absolute value of angle that the servo will steer the vehicle at (specifies the turning radius)
+                */
+                void gyro_turn_relative(double turn_angle, double servo_steering_angle);
+
+                /*
+                Purpose: Uses PID control and the gyro to drive along a given angle. 
+                Params: 
+                - target_angle: the angle to drive the vehicle at.
+                - stop_condition: a function that returns true when the vehicle should stop driving.
+                */
+                void gyro_drive_straight_angle(double target_angle, bool (*stop_condition)());
+        };
         
 };
