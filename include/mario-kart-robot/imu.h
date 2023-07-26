@@ -35,7 +35,7 @@ class IMU{
 
     public:
         // BASIC FUNCTIONS *****************************************************************************************************************
-        void begin_imu(TwoWire i2c);
+        void begin_imu();
         void read_imu();
 
         /*

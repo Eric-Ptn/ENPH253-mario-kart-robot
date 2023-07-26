@@ -2,12 +2,11 @@
 #include <mario-kart-robot\oled_display.h>
 #include <mario-kart-robot\motors.h>
 
-
-void IMU::begin_imu(TwoWire i2c) {
+void IMU::begin_imu() {
     // TwoWire *I2Cpointer = &secondaryI2C;
     // TwoWire secondaryI2C = TwoWire(PB11, PB10);
 
-    imu.begin(MPU6050_I2CADDR_DEFAULT, &i2c, 0L);
+    imu.begin(MPU6050_I2CADDR_DEFAULT, &Wire, 0L);
     OLED::display_text("gyro started");
     delay(5000);
 }

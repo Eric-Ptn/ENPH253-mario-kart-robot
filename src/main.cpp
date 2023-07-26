@@ -10,9 +10,9 @@
 IMU mpu6050;
 TapeFollower tape_follower;
 
-TwoWire secondaryI2Cballs = TwoWire(PB11, PB10);
-
 void setup() {
+  Wire.begin(uint32_t(PB11), uint32_t(PB10));
+
   // pins
   pinMode(SERVO_PIN, OUTPUT);
   for (int i = 0; i < NUM_IR_SENSORS; i++)  {
@@ -30,8 +30,6 @@ void setup() {
   pinMode(WALL_SONAR_ECHO, INPUT);
 
   // gyro and OLED connect to I2C pins, PB6 and PB7, but don't need to be included here
-
-  OLED::display_handler = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &secondaryI2Cballs, OLED_RESET);
 
   // i2c adafruit components
   OLED::begin_oled();
