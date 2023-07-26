@@ -21,4 +21,11 @@ namespace sonar {
     Note: aint no way - Eric
     */
     long measure_distance(int sonar_echo_pin);
+
+    void stop_sonar(int sonar_trigger_pin);
+
+    // SENSOR EVENTS ***************************************
+    bool seeing_bridge();
+    bool seeing_wall();
+    bool test_bool();
 }

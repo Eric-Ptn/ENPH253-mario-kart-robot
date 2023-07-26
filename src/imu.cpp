@@ -1,14 +1,10 @@
 #include <mario-kart-robot\imu.h>
 #include <mario-kart-robot\oled_display.h>
 #include <mario-kart-robot\motors.h>
+#include <cmath>
 
 void IMU::begin_imu() {
-    // TwoWire *I2Cpointer = &secondaryI2C;
-    // TwoWire secondaryI2C = TwoWire(PB11, PB10);
-
-    imu.begin(MPU6050_I2CADDR_DEFAULT, &Wire, 0L);
-    OLED::display_text("gyro started");
-    delay(5000);
+    imu.begin();
 }
 
 
@@ -18,14 +14,14 @@ void IMU::read_imu() {
 
   gyro_readings[0] = g.gyro.x - gyro_offsets[0];
   gyro_readings[1] = g.gyro.y - gyro_offsets[1];
-  gyro_readings[2] =  g.gyro.z - gyro_offsets[2] - gyro_z_drift;
+  gyro_readings[2] =  g.gyro.z - gyro_offsets[2];
 
   accel_readings[0] = a.acceleration.x - accel_offsets[0];
   accel_readings[1] = a.acceleration.y - accel_offsets[1];
   accel_readings[2] = a.acceleration.z - accel_offsets[2];
 
-  String gyro_report = "Rotation X: " + String(g.gyro.x - gyro_offsets[0]) + ", Rotation Y: " + String(g.gyro.y - gyro_offsets[1]) + ", Rotation Z: " + String(g.gyro.z - gyro_offsets[2]) + " rad/s";
-  OLED::display_text(gyro_report);
+  // String gyro_report = "Rotation X: " + String(g.gyro.x - gyro_offsets[0]) + ", Rotation Y: " + String(g.gyro.y - gyro_offsets[1]) + ", Rotation Z: " + String(g.gyro.z - gyro_offsets[2]) + " rad/s";
+  // OLED::display_text(gyro_report);
 }
 
 
@@ -33,7 +29,7 @@ double IMU::calculate_z_angle() {
   read_imu();
 
   double dt = (millis() - angle_time) / 1000;
-  angle += gyro_readings[2] * dt;
+  angle += gyro_readings[2] * dt - gyro_z_drift * pow(dt, 2.0);
   if (angle > M_PI) {
     angle -= 2 * M_PI;
   }
@@ -43,8 +39,8 @@ double IMU::calculate_z_angle() {
 
   angle_time = millis();
 
-  String angle_text = "Angle: " + String(angle);
-  OLED::display_text(angle_text);
+  // String angle_text = "Angle: " + String(angle);
+  // OLED::display_text(angle_text);
   return angle;
 }
 
@@ -83,38 +79,50 @@ IMU::GyroMovement::GyroMovement(IMU &parent_imu) {
   imu = &parent_imu;
 }
 
+void IMU::reset_angle() {
+  angle = 0;
+  angle_time = millis();
+}
+
 void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_steering_angle) {
 
-    (*imu).calculate_z_angle();
-    double angle_difference = circular_correction(absolute_angle - (*imu).angle);
+    if (completed) {return;}
+
+    double angle_difference = (*imu).circular_correction(absolute_angle - (*imu).angle);
 
     if (angle_difference < 0) {
       servo_steering_angle *= -1;
     }
-    motors::servo_pwm(SERVO_MOUNTING_ANGLE + servo_steering_angle);
-    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false);
-    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false);
 
-    if (abs(angle_difference) > ANGLE_TOLERANCE_RADIANS) {
+    String angle_text = "Angle: " + String((*imu).angle) + " Difference: " + String(angle_difference);
+    OLED::display_text(angle_text);
+
+    motors::servo_pwm(SERVO_MOUNTING_ANGLE + servo_steering_angle);
+    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false, false); // TODO: change later
+    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false, false);
+
+    if (abs(angle_difference) < ANGLE_TOLERANCE_RADIANS) {
       completed = true;
+      String text = "done";
+      OLED::display_text(text);
     }
-    // String angle_text = "Angle: " + String(angle) + " Difference: " + String(angle_difference);
-    // OLED::display_text(angle_text);
 
 }
 
 
 void IMU::GyroMovement::gyro_turn_relative(double turn_angle, double servo_steering_angle) {
 
-   double final_absolute_angle = circular_correction((*imu).angle + turn_angle);
+   double final_absolute_angle = (*imu).circular_correction((*imu).angle + turn_angle);
    gyro_turn_absolute(final_absolute_angle, servo_steering_angle);
 
 }
 
 
-void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, bool (*stop_condition)()) {
+void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::function<bool()> stop_condition) {
 
-  double error = circular_correction(target_angle - (*imu).angle);
+  if (completed) {return;}
+
+  double error = (*imu).circular_correction(target_angle - (*imu).angle);
 
   (*imu).proportional = error;
   (*imu).derivative = error - (*imu).last_error;
@@ -131,12 +139,12 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, bool (*st
 
   double correction_val = (*imu).Kp * (*imu).proportional + (*imu).Kd * (*imu).derivative + (*imu).Ki * (*imu).integral;
 
-  // String angle_text = "Angle: " + String(angle) + " Correction: " + String(correction_val) + " Error: " + String(error);
-  // OLED::display_text(angle_text);
+  String angle_text = "Angle: " + String((*imu).angle) + " Correction: " + String(correction_val) + " Error: " + String(error);
+  OLED::display_text(angle_text);
 
   motors::servo_pwm(SERVO_MOUNTING_ANGLE + correction_val);
-  motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
-  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
+  motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false); // change later
+  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
 
   if (stop_condition()) {
     completed = true;
@@ -144,10 +152,14 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, bool (*st
   
 }
 
-// bool IMU::robot_falling() {
-//   read_imu();
-//   return accel_readings[2] > FALLING_ACCELERATION;
-// }
+bool IMU::GyroMovement::complete() {
+  return completed;
+}
+
+bool IMU::robot_falling() {
+  read_imu();
+  return accel_readings[2] > FALLING_ACCELERATION;
+}
 
 double IMU::circular_correction(double angle) {
 

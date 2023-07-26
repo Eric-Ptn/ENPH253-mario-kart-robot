@@ -33,4 +33,31 @@ namespace sonar {
 
         return distance;
     }
+
+    void stop_sonar(int sonar_trigger_pin){
+        if (sonar_trigger_pin == BRIDGE_SONAR_TRIGGER) {
+            pwm_start(BRIDGE_SONAR_PWM_NAME, SONAR_FREQUENCY, 0, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
+        }
+
+        else if (sonar_trigger_pin == WALL_SONAR_TRIGGER) {
+            pwm_start(WALL_SONAR_PWM_NAME, SONAR_FREQUENCY, 0, TimerCompareFormat_t::PERCENT_COMPARE_FORMAT);
+        }
+    }
+
+    bool seeing_bridge(){
+        trigger_sonar(BRIDGE_SONAR_TRIGGER);
+        return measure_distance(BRIDGE_SONAR_ECHO) < BRIDGE_DISTANCE;
+    }
+
+    bool seeing_wall(){
+        trigger_sonar(WALL_SONAR_TRIGGER);
+        return measure_distance(WALL_SONAR_ECHO) < WALL_DISTANCE;
+    }
+
+    bool test_bool(){
+        if (millis() > 35000) {
+            return true;
+        }
+        return false;
+    }
 }

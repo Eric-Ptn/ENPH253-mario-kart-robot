@@ -59,6 +59,8 @@ class IMU{
         */
         void z_drift_calibrate();
 
+        void reset_angle();
+
         // MOVEMENT ************************************************************************************************************************
 
         
@@ -66,10 +68,10 @@ class IMU{
         // SENSOR EVENTS *******************************************************************************************************************
         
         // detects accelerometer spike to judge whether robot is falling or not
-        static bool robot_falling();
+        bool robot_falling();
 
         // HELPERS *************************************************************************************************************************
-        static double circular_correction(double angle);
+        double circular_correction(double angle);
 
         // OBJECTS *************************************************************************************************************************
         
@@ -104,7 +106,9 @@ class IMU{
                 - target_angle: the angle to drive the vehicle at.
                 - stop_condition: a function that returns true when the vehicle should stop driving.
                 */
-                void gyro_drive_straight_angle(double target_angle, bool (*stop_condition)());
+                void gyro_drive_straight_angle(double target_angle, std::function<bool()> stop_condition);
+
+                bool complete();
         };
         
 };

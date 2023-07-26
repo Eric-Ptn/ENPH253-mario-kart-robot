@@ -41,6 +41,7 @@ class TapeFollower {
         void follow_tape();
 
         // sensor events
-        static bool seeing_white();
-        static bool seeing_black();
+        bool seeing_white();
+        bool seeing_black();
+        // bool test_bool();
 };

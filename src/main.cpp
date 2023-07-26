@@ -4,13 +4,13 @@
 #include <mario-kart-robot\imu.h>
 #include <mario-kart-robot\tape_follower.h>
 #include <mario-kart-robot\oled_display.h>
-
-// TODO: use protothreads to do gyro readings and course navigation "simultaneously"
+#include <mario-kart-robot\sonar.h>
 
 IMU mpu6050;
 TapeFollower tape_follower;
 
 void setup() {
+  // CHANGE WIRE OBJECT TO WORK ON SECOND I2C
   Wire.begin(uint32_t(PB11), uint32_t(PB10));
 
   // pins
@@ -35,39 +35,41 @@ void setup() {
   OLED::begin_oled();
 
 
-  // mpu6050.begin_imu(secondaryI2Cballs);
-  // OLED::display_text("hi");
-  // delay(400);
+  mpu6050.begin_imu();
+
   // gyro calibration
-  // OLED::display_text("fast calibration...");
-  // mpu6050.reading_calibrate();
-  // OLED::display_text("slow calibration...");
-  // mpu6050.z_drift_calibrate();
+  OLED::display_text("fast calibration...");
+  mpu6050.reading_calibrate();
+  OLED::display_text("slow calibration...");
+  mpu6050.z_drift_calibrate();
+  mpu6050.reset_angle();
 
   // ir calibration
-  tape_follower.scaling_offset_calibration();
-  motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+  // tape_follower.scaling_offset_calibration();
+  // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 
 }
 
-// TEST TAPE FOLLOWING PID
 
-void loop() {
-  tape_follower.follow_tape();
-}
+// // TEST TAPE FOLLOWING PID
+
+// void loop() {
+//   // tape_follower.follow_tape();
+// }
 
 
 // TEST GYRO STRAIGHT PID
 
-// void loop() {
+IMU::GyroMovement straight1(mpu6050);
+IMU::GyroMovement turn1(mpu6050);
+// auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
+auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
 
-//   mpu6050.read_imu();
-//   delay(500);
-//   // mpu6050.calculate_z_angle();
-
-//   // IMU::GyroMovement straight1(mpu6050);
-//   // straight1.gyro_drive_straight_angle(0, TapeFollower::seeing_white);
-// }
+void loop() {
+  mpu6050.calculate_z_angle();
+  straight1.gyro_drive_straight_angle(0, sonar_ptr);
+  if (straight1.complete()) {turn1.gyro_turn_absolute(1, 0.3);}
+}
 
 // TEST GYRO TURNING
 
