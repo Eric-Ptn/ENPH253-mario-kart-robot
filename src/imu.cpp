@@ -7,7 +7,9 @@ void IMU::begin_imu(TwoWire i2c) {
     // TwoWire *I2Cpointer = &secondaryI2C;
     // TwoWire secondaryI2C = TwoWire(PB11, PB10);
 
-    imu.begin(MPU6050_I2CADDR_DEFAULT, &i2c);
+    imu.begin(MPU6050_I2CADDR_DEFAULT, &i2c, 0L);
+    OLED::display_text("gyro started");
+    delay(5000);
 }
 
 

@@ -64,7 +64,7 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 25
+#define DEFAULT_MOTOR_DUTY_CYCLE 20
 #define MOTOR_CORRECTION_SCALING 10 // arbitrary, find experimentally
 
 // angle tolerance for ending a gyro turn
@@ -73,7 +73,7 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 // servo steering
 // #define SERVO_MOUNTING_ANGLE M_PI/6
 #define SERVO_MOUNTING_ANGLE 0.6
-#define SERVO_MAX_STEER 0.45
+#define SERVO_MAX_STEER 0.4
 
 // sonar
 #define SONAR_FREQUENCY 17 // 1/60ms = 17Hz
