@@ -34,11 +34,15 @@ namespace motors {
   }
 
 
-  void left_motor_steering_drive(double steering_angle, bool reverse) {
+  void left_motor_steering_drive(double steering_angle, bool reverse, bool inner) {
     if (reverse) {
       left_motor_PWM(-1 * (DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE)));
     } else {
-      left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE));
+      if (inner) {
+      left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING_INNER * abs(steering_angle - SERVO_MOUNTING_ANGLE));
+      } else {
+      left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING_OUTER * abs(steering_angle - SERVO_MOUNTING_ANGLE));
+      }
     }
   }
 
@@ -54,11 +58,15 @@ namespace motors {
   }
 
 
-  void right_motor_steering_drive(double steering_angle, bool reverse) {
+  void right_motor_steering_drive(double steering_angle, bool reverse, bool inner) {
     if (reverse) {
       right_motor_PWM(-1 * (DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE)));
     } else {
-      right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE));
+      if (inner) {
+      right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING_INNER * abs(steering_angle - SERVO_MOUNTING_ANGLE));
+      } else {
+      right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING_OUTER * abs(steering_angle - SERVO_MOUNTING_ANGLE));
+      }
     }
   }
   

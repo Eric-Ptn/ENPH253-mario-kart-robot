@@ -46,9 +46,9 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define GYRO_MAX_INTEGRAL 0
 
 // tape following PID values (partially tuned)
-#define TAPE_FOLLOWING_KP 0.8
+#define TAPE_FOLLOWING_KP 1.1
 #define TAPE_FOLLOWING_KI 0
-#define TAPE_FOLLOWING_KD 0
+#define TAPE_FOLLOWING_KD 0.7
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
@@ -64,8 +64,11 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 20
-#define MOTOR_CORRECTION_SCALING 10 // arbitrary, find experimentally
+#define DEFAULT_MOTOR_DUTY_CYCLE 24
+#define MOTOR_CORRECTION_SCALING 7.5 // arbitrary, find experimentally
+#define MOTOR_CORRECTION_SCALING_INNER 8
+#define MOTOR_CORRECTION_SCALING_OUTER 7
+#define CORRECTION_VAL_THRESHOLD 1 // if correction_val < CORRECTION_VAL_THRESHOLD then the scaling is the same for both motors
 
 // angle tolerance for ending a gyro turn
 #define ANGLE_TOLERANCE_RADIANS 0.04

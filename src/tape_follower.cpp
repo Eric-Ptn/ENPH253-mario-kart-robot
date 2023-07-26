@@ -115,8 +115,19 @@ void TapeFollower::follow_tape() {
   OLED::display_text(servo_info);
 
   // drive motors, slow down based on how far off you are (ex. turn)
-  motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
-  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
+  if (correction_val > CORRECTION_VAL_THRESHOLD) {
+    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
+    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, true);
+  }
+  else if (correction_val < -1 * CORRECTION_VAL_THRESHOLD) {
+    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, true);
+    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
+  }
+  else {
+     motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
+    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
+  }
+
 }
 
 // bool TapeFollower::seeing_white() {
