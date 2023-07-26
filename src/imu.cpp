@@ -90,7 +90,7 @@ void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_s
 
     double angle_difference = (*imu).circular_correction(absolute_angle - (*imu).angle);
 
-    if (angle_difference < 0) {
+    if (angle_difference > 0) {
       servo_steering_angle *= -1;
     }
 
