@@ -80,11 +80,17 @@ void TapeFollower::follow_tape() {
   }
 
   double error;
-  if (sum_of_weights < 0) { // use to have another negative offset - if not all black, calculate error else use old error
+  if (sum_of_weights < SAME_ERROR_THRESHOLD) { // use to have another negative offset - if not all black, calculate error else use old error
     current_position /= sum_of_weights; // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
     error = desired_center - current_position; // (ranges from 0 to desired_center - 1)
+    // OLED::display_text("Normal error: "+ String(error));
   } else {
-    error = last_error; // if you don't see anything, assume the error was similar to before, avoid division by zero problem as well
+    if (last_error < 0) {
+      error = -1 * SERVO_MAX_STEER;
+    } else {
+      error = SERVO_MAX_STEER; // if you don't see anything, assume the error was similar to before, avoid division by zero problem as well
+    }
+    // OLED::display_text("Remembered error: "+ String(error));
   }
 
   
@@ -107,27 +113,19 @@ void TapeFollower::follow_tape() {
   motors::servo_pwm(SERVO_MOUNTING_ANGLE + correction_val);
 
   // OLED display, feel free to comment out
-  String servo_info = "Servo write: " + String(SERVO_MOUNTING_ANGLE - correction_val) + " correction value: " + String(correction_val) + " position: " + String(current_position);
-  for(int i = 0; i < NUM_IR_SENSORS; i++) {
-    servo_info += ", Sensor " + String(i) + ": " + String(processed_ir_reading(i));
-  }
+  // String servo_info = "Servo write: " + String(SERVO_MOUNTING_ANGLE - correction_val) + " correction value: " + String(correction_val) + " position: " + String(current_position);
+  // for(int i = 0; i < NUM_IR_SENSORS; i++) {
+  //   servo_info += ", Sensor " + String(i) + ": " + String(processed_ir_reading(i));
+  // }
 
-  OLED::display_text(servo_info);
+  // OLED::display_text(servo_info);
 
   // drive motors, slow down based on how far off you are (ex. turn)
-  if (correction_val > CORRECTION_VAL_THRESHOLD) {
-    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
-    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, true);
-  }
-  else if (correction_val < -1 * CORRECTION_VAL_THRESHOLD) {
-    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, true);
-    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
-  }
-  else {
-    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
-    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
-  }
+  motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
+  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE - correction_val, false);
 }
+
+
 
 bool TapeFollower::seeing_white() {
   for (int i = 0; i < NUM_IR_SENSORS; i++) {

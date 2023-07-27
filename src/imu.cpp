@@ -143,8 +143,8 @@ void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_s
     OLED::display_text(angle_text);
 
     motors::servo_pwm(SERVO_MOUNTING_ANGLE + servo_steering_angle);
-    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false, false); // TODO: change later
-    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false, false);
+    motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false); // TODO: change later
+    motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false);
 
     if (abs(angle_difference) < ANGLE_TOLERANCE_RADIANS) {
       completed = true;
@@ -188,8 +188,8 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::func
   OLED::display_text(angle_text);
 
   motors::servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
-  motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false); // change later
-  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, false);
+  motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false); // change later
+  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
 
   if (stop_condition()) {
     completed = true;

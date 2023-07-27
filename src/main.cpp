@@ -24,10 +24,13 @@ void setup() {
   pinMode(RIGHT_MOTOR_PIN, OUTPUT);
   pinMode(RIGHT_REVERSE_MOTOR_PIN, OUTPUT);
 
-  pinMode(BRIDGE_SONAR_TRIGGER, OUTPUT);
-  pinMode(BRIDGE_SONAR_ECHO, INPUT);
-  pinMode(WALL_SONAR_TRIGGER, OUTPUT);
-  pinMode(WALL_SONAR_ECHO, INPUT);
+  // uncomment this later lol, I just want the tone thingey to work. I hate u eric.
+  // pinMode(BRIDGE_SONAR_TRIGGER, OUTPUT);
+  // pinMode(BRIDGE_SONAR_ECHO, INPUT);
+  // pinMode(WALL_SONAR_TRIGGER, OUTPUT);
+  // pinMode(WALL_SONAR_ECHO, INPUT);
+
+  pinMode(PA10, INPUT_PULLUP);
 
   // gyro and OLED connect to I2C pins, PB6 and PB7, but don't need to be included here
 
@@ -35,44 +38,50 @@ void setup() {
   OLED::begin_oled();
 
 
-  mpu6050.begin_imu();
+  // mpu6050.begin_imu();
 
-  // gyro calibration
-  delay(1000);
-  OLED::display_text("fast calibration...");
-  mpu6050.reading_calibrate();
-  OLED::display_text("slow calibration...");
-  mpu6050.drift_calibrate();
-  mpu6050.reset_angle();
-  mpu6050.reset_speed();
+  // // gyro calibration
+  // delay(1000);
+  // OLED::display_text("fast calibration...");
+  // mpu6050.reading_calibrate();
+  // OLED::display_text("slow calibration...");
+  // mpu6050.drift_calibrate();
+  // mpu6050.reset_angle();
+  // mpu6050.reset_speed();
 
   // ir calibration
-  // tape_follower.scaling_offset_calibration();
-  // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+  tape_follower.scaling_offset_calibration();
+  motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 
-}
-
-IMU::GyroMovement straight1(mpu6050);
-IMU::GyroMovement turn1(mpu6050);
-// auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
-auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
-
-void loop() {
-  mpu6050.calculate_z_angle();
-  straight1.gyro_turn_absolute(M_PI/2, 0.3);
-  if(straight1.complete()){turn1.gyro_turn_absolute(M_PI, 0.3);}
-
-  if (turn1.complete()) {
-    motors::left_motor_PWM(0);
-    motors::right_motor_PWM(0);
+  while(1) {
+    if (digitalRead(PA10) == LOW) {
+        break;
+    }
+    delay(100);
   }
 }
 
-// // TEST TAPE FOLLOWING PID
+// IMU::GyroMovement straight1(mpu6050);
+// IMU::GyroMovement turn1(mpu6050);
+// // auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
+// auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
 
 // void loop() {
-//   // tape_follower.follow_tape();
+//   mpu6050.calculate_z_angle();
+//   straight1.gyro_turn_absolute(M_PI/2, 0.3);
+//   if(straight1.complete()){turn1.gyro_turn_absolute(M_PI, 0.3);}
+
+//   if (turn1.complete()) {
+//     motors::left_motor_PWM(0);
+//     motors::right_motor_PWM(0);
+//   }
 // }
+
+// // TEST TAPE FOLLOWING PID
+
+void loop() {
+  tape_follower.follow_tape();
+}
 
 
 // TEST GYRO STRAIGHT PID

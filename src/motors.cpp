@@ -34,15 +34,18 @@ namespace motors {
   }
 
 
-  void left_motor_steering_drive(double steering_angle, bool reverse, bool inner) {
+  void left_motor_steering_drive(double steering_angle, bool reverse) {
+    double adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * (steering_angle - SERVO_MOUNTING_ANGLE);
+    if (adjusted_value < 10) {
+      adjusted_value = 10;
+    }
+    if (adjusted_value > DEFAULT_MOTOR_DUTY_CYCLE) {
+      adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE;
+    }
     if (reverse) {
-      left_motor_PWM(-1 * (DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE)));
+      left_motor_PWM(-1 * adjusted_value);
     } else {
-      if (inner) {
-        left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING_INNER * abs(steering_angle - SERVO_MOUNTING_ANGLE));
-      } else {
-        left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING_OUTER * abs(steering_angle - SERVO_MOUNTING_ANGLE));
-      }
+      left_motor_PWM(adjusted_value);
     }
   }
 
@@ -58,15 +61,18 @@ namespace motors {
   }
 
 
-  void right_motor_steering_drive(double steering_angle, bool reverse, bool inner) {
+  void right_motor_steering_drive(double steering_angle, bool reverse) {
+    double adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * (steering_angle - SERVO_MOUNTING_ANGLE);
+    if (adjusted_value < 10) {
+      adjusted_value = 10;
+    }
+    if (adjusted_value > DEFAULT_MOTOR_DUTY_CYCLE) {
+      adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE;
+    }
     if (reverse) {
-      right_motor_PWM(-1 * (DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * abs(steering_angle - SERVO_MOUNTING_ANGLE)));
+      right_motor_PWM(-1 * adjusted_value);
     } else {
-      if (inner) {
-        right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING_INNER * abs(steering_angle - SERVO_MOUNTING_ANGLE));
-      } else {
-        right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING_OUTER * abs(steering_angle - SERVO_MOUNTING_ANGLE));
-      }    
+      right_motor_PWM(adjusted_value);
     }
   }
   

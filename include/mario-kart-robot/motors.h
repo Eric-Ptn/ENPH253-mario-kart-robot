@@ -15,7 +15,7 @@ namespace motors {
     void left_motor_PWM(double duty_cycle_percent);
 
     
-    void left_motor_steering_drive(double steering_angle, bool reverse, bool inner);
+    void left_motor_steering_drive(double steering_angle, bool reverse);
     void right_motor_PWM(double duty_cycle_percent);
-    void right_motor_steering_drive(double steering_angle, bool reverse, bool inner);
+    void right_motor_steering_drive(double steering_angle, bool reverse);
 }
