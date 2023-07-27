@@ -55,9 +55,9 @@ namespace sonar {
     }
 
     bool test_bool(){
-        if (millis() > 35000) {
-            return true;
-        }
+        // if (millis() > 50000) {
+        //     return true;
+        // }
         return false;
     }
 }

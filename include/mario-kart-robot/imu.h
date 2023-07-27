@@ -16,10 +16,13 @@ class IMU{
         double gyro_offsets[3];
         double accel_offsets[3];
         double gyro_z_drift = 0;
+        double accel_x_drift = 0;
 
         // gyro calculating angle
         double angle = 0;
         double angle_time = 0;
+        double velocity = 0;
+        double velocity_time = 0;
 
         // gyro PID vals
         double proportional = 0;
@@ -37,12 +40,14 @@ class IMU{
         // BASIC FUNCTIONS *****************************************************************************************************************
         void begin_imu();
         void read_imu();
+        void read_imu_screen();
 
         /*
         Purpose: Calculates the angle that the gyro is oriented at. This angle is in the range -pi to pi.
         Alters: angle (angle of the gyro, calibrated to 0 at beginning)
         */
         double calculate_z_angle();
+        double calculate_velocity();
 
         // CALIBRATION **********************************************************************************************************************
 
@@ -57,9 +62,10 @@ class IMU{
         Purpose: Measures the drift of the z-angle of the gyro over a calibration period. Sets z_drift according to a linear fit.
         Alters: gyro_z_drift (should only be altered by this function)
         */
-        void z_drift_calibrate();
+        void drift_calibrate();
 
         void reset_angle();
+        void reset_speed();
 
         // MOVEMENT ************************************************************************************************************************
 

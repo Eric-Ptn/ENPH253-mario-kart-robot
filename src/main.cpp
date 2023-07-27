@@ -38,11 +38,13 @@ void setup() {
   mpu6050.begin_imu();
 
   // gyro calibration
+  delay(1000);
   OLED::display_text("fast calibration...");
   mpu6050.reading_calibrate();
   OLED::display_text("slow calibration...");
-  mpu6050.z_drift_calibrate();
+  mpu6050.drift_calibrate();
   mpu6050.reset_angle();
+  mpu6050.reset_speed();
 
   // ir calibration
   // tape_follower.scaling_offset_calibration();
@@ -50,6 +52,21 @@ void setup() {
 
 }
 
+IMU::GyroMovement straight1(mpu6050);
+IMU::GyroMovement turn1(mpu6050);
+// auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
+auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
+
+void loop() {
+  mpu6050.calculate_z_angle();
+  straight1.gyro_turn_absolute(M_PI/2, 0.3);
+  if(straight1.complete()){turn1.gyro_turn_absolute(M_PI, 0.3);}
+
+  if (turn1.complete()) {
+    motors::left_motor_PWM(0);
+    motors::right_motor_PWM(0);
+  }
+}
 
 // // TEST TAPE FOLLOWING PID
 
@@ -60,16 +77,16 @@ void setup() {
 
 // TEST GYRO STRAIGHT PID
 
-IMU::GyroMovement straight1(mpu6050);
-IMU::GyroMovement turn1(mpu6050);
-// auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
-auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
+// IMU::GyroMovement straight1(mpu6050);
+// IMU::GyroMovement turn1(mpu6050);
+// // auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
+// auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
 
-void loop() {
-  mpu6050.calculate_z_angle();
-  straight1.gyro_drive_straight_angle(0, sonar_ptr);
-  if (straight1.complete()) {turn1.gyro_turn_absolute(1, 0.3);}
-}
+// void loop() {
+//   mpu6050.calculate_z_angle();
+//   straight1.gyro_drive_straight_angle(0, sonar_ptr);
+//   if (straight1.complete()) {turn1.gyro_turn_absolute(1, 0.3);}
+// }
 
 // TEST GYRO TURNING
 

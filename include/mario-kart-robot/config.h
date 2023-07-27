@@ -40,9 +40,9 @@ const byte IR_PINS[] = {PA1, PA0, PA4, PA3};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // gyro PID values
-#define GYRO_KP 0.3
+#define GYRO_KP 1.1
 #define GYRO_KI 0
-#define GYRO_KD 0
+#define GYRO_KD 0.7
 #define GYRO_MAX_INTEGRAL 0
 
 // tape following PID values (partially tuned)
@@ -52,8 +52,8 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
-#define GYRO_FAST_CALIBRATION_RUNS 5000
-#define GYRO_SLOW_CALIBRATION_SECONDS 5
+#define IMU_FAST_CALIBRATION_RUNS 5000
+#define IMU_SLOW_CALIBRATION_SECONDS 15
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
@@ -64,7 +64,7 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 24
+#define DEFAULT_MOTOR_DUTY_CYCLE 30
 #define MOTOR_CORRECTION_SCALING 7.5 // arbitrary, find experimentally
 #define MOTOR_CORRECTION_SCALING_INNER 8
 #define MOTOR_CORRECTION_SCALING_OUTER 7
