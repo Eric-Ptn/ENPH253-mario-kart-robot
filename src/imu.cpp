@@ -7,6 +7,13 @@ void IMU::begin_imu() {
     imu.begin();
 }
 
+void IMU::i2c_reboot() {
+  Wire.beginTransmission(MPU6050_I2CADDR_DEFAULT);
+  Wire.write(0x43);
+  if(Wire.endTransmission() != 0) {
+    imu.begin();
+  }
+}
 
 void IMU::read_imu() {
   sensors_event_t a, g, temp;
@@ -16,9 +23,9 @@ void IMU::read_imu() {
   gyro_readings[1] = g.gyro.y - gyro_offsets[1];
   gyro_readings[2] =  g.gyro.z - gyro_offsets[2];
 
-  accel_readings[0] = a.acceleration.x - accel_offsets[0];
-  accel_readings[1] = a.acceleration.y - accel_offsets[1];
-  accel_readings[2] = a.acceleration.z - accel_offsets[2];
+  // accel_readings[0] = a.acceleration.x - accel_offsets[0];
+  // accel_readings[1] = a.acceleration.y - accel_offsets[1];
+  // accel_readings[2] = a.acceleration.z - accel_offsets[2];
 
   // String accel_report = "Acceleration X: " + String(a.acceleration.x - accel_offsets[0]) + ", Acceleration Y: " + String(a.acceleration.y - accel_offsets[1]) + ", Acceleration Z: " + String(a.acceleration.z - accel_offsets[2]) + " m/s^2";
 
@@ -65,20 +72,20 @@ double IMU::calculate_z_angle() {
   return angle;
 }
 
-double IMU::calculate_velocity() {
-  read_imu();
+// double IMU::calculate_velocity() {
+//   read_imu();
 
-  double dt = (millis() - velocity_time) / 1000;
+//   double dt = (millis() - velocity_time) / 1000;
 
-  velocity += accel_readings[0] * dt - accel_x_drift * pow(dt, 2.0);
+//   velocity += accel_readings[0] * dt - accel_x_drift * pow(dt, 2.0);
 
-  velocity_time = millis();
+//   velocity_time = millis();
 
-  String speed_text = "Speed: " + String(velocity);
-  OLED::display_text(speed_text);
+//   String speed_text = "Speed: " + String(velocity);
+//   OLED::display_text(speed_text);
 
-  return velocity;
-}
+//   return velocity;
+// }
 
 void IMU::reading_calibrate() {
   double coord_sums[3] = {0};
@@ -88,13 +95,13 @@ void IMU::reading_calibrate() {
       read_imu();
       for(int i = 0; i < 3; i++) {
         coord_sums[i] += gyro_readings[i];
-        accel_sums[i] += accel_readings[i];
+        // accel_sums[i] += accel_readings[i];
       }
   }
 
   for(int i = 0; i < 3; i++) {
     gyro_offsets[i] = coord_sums[i] / IMU_FAST_CALIBRATION_RUNS;
-    accel_offsets[i] = accel_sums[i] / IMU_FAST_CALIBRATION_RUNS;
+    // accel_offsets[i] = accel_sums[i] / IMU_FAST_CALIBRATION_RUNS;
   }
 }
 
@@ -102,16 +109,16 @@ void IMU::reading_calibrate() {
 void IMU::drift_calibrate() {
   read_imu();
   double initial_z_angle_value = gyro_readings[2];
-  double initial_x_accel_value = accel_readings[0];
+  // double initial_x_accel_value = accel_readings[0];
 
   delay(IMU_SLOW_CALIBRATION_SECONDS * 1000);
   
   read_imu();
   double final_z_angle_value = gyro_readings[2];
-  double final_x_accel_value = accel_readings[0];
+  // double final_x_accel_value = accel_readings[0];
   
   gyro_z_drift = (final_z_angle_value - initial_z_angle_value) / IMU_SLOW_CALIBRATION_SECONDS;
-  accel_x_drift = (final_x_accel_value - initial_x_accel_value) / IMU_SLOW_CALIBRATION_SECONDS;
+  // accel_x_drift = (final_x_accel_value - initial_x_accel_value) / IMU_SLOW_CALIBRATION_SECONDS;
 
 }
 
@@ -124,10 +131,10 @@ void IMU::reset_angle() {
   angle_time = millis();
 }
 
-void IMU::reset_speed() {
-  velocity = 0;
-  velocity_time = millis();
-}
+// void IMU::reset_speed() {
+//   velocity = 0;
+//   velocity_time = millis();
+// }
 
 void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_steering_angle) {
 
@@ -189,7 +196,7 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::func
 
   motors::servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
   motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false); // change later
-  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
+  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE - correction_val, false);
 
   if (stop_condition()) {
     completed = true;

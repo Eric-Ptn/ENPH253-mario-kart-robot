@@ -46,14 +46,14 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define GYRO_MAX_INTEGRAL 0
 
 // tape following PID values
-#define TAPE_FOLLOWING_KP 3
-#define TAPE_FOLLOWING_KI 0.25
-#define TAPE_FOLLOWING_KD 1
+#define TAPE_FOLLOWING_KP 1.1
+#define TAPE_FOLLOWING_KI 0
+#define TAPE_FOLLOWING_KD 0.7
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
 #define IMU_FAST_CALIBRATION_RUNS 5000
-#define IMU_SLOW_CALIBRATION_SECONDS 15
+#define IMU_SLOW_CALIBRATION_SECONDS 8
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
@@ -65,7 +65,7 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 25
+#define DEFAULT_MOTOR_DUTY_CYCLE 24
 #define MOTOR_CORRECTION_SCALING 4 // arbitrary, find experimentally
 // #define MOTOR_CORRECTION_SCALING_INNER 2.5
 // #define MOTOR_CORRECTION_SCALING_OUTER 1.5

@@ -41,6 +41,7 @@ class IMU{
         void begin_imu();
         void read_imu();
         void read_imu_screen();
+        void i2c_reboot();
 
         /*
         Purpose: Calculates the angle that the gyro is oriented at. This angle is in the range -pi to pi.

@@ -42,6 +42,9 @@ namespace motors {
     if (adjusted_value > DEFAULT_MOTOR_DUTY_CYCLE) {
       adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE;
     }
+    if (abs(steering_angle - SERVO_MAX_STEER) == SERVO_MOUNTING_ANGLE) {
+      adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE + 7;
+    }
     if (reverse) {
       left_motor_PWM(-1 * adjusted_value);
     } else {
@@ -68,6 +71,9 @@ namespace motors {
     }
     if (adjusted_value > DEFAULT_MOTOR_DUTY_CYCLE) {
       adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE;
+    }
+    if (abs(steering_angle - SERVO_MAX_STEER) == SERVO_MOUNTING_ANGLE) {
+      adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE + 9;
     }
     if (reverse) {
       right_motor_PWM(-1 * adjusted_value);
