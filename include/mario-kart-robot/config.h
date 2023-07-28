@@ -46,9 +46,9 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define GYRO_MAX_INTEGRAL 0
 
 // tape following PID values
-#define TAPE_FOLLOWING_KP 1.1
+#define TAPE_FOLLOWING_KP 3
 #define TAPE_FOLLOWING_KI 0
-#define TAPE_FOLLOWING_KD 0.7
+#define TAPE_FOLLOWING_KD 1
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
