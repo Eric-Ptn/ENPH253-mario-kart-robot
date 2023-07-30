@@ -63,6 +63,7 @@ class IMU{
         Alters: gyro_z_drift, accel_x_drift (both should only be altered by this function)
         */
         void drift_calibrate();
+        void quick_calibration(); // uses previously saved values in config
 
         void reset_quantities();
 

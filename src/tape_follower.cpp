@@ -66,6 +66,17 @@ void TapeFollower::scaling_offset_calibration() {
     ir_offsets[i] = highest_average;
   }
 
+  // OLED::display_text("s0 scaling: " + String(ir_scaling[0]) + " s0 offset: " + String(ir_offsets[0]) + 
+  // " s1 scaling: " + String(ir_scaling[1]) + " s1 offset: " + String(ir_offsets[1]) + " s2 scaling: " + String(ir_scaling[2]) + " s2 offset: " + String(ir_offsets[2])
+  // + " s3 scaling: " + String(ir_scaling[3]) + " s3 offset: " + String(ir_offsets[3]) + " s4 scaling: " + String(ir_scaling[4]) + " s4 offset: " + String(ir_offsets[4]));
+
+}
+
+void TapeFollower::quick_calibration() {
+  for (int i = 0; i < NUM_IR_SENSORS; i++) {
+    ir_offsets[i] = SAVED_IR_OFFSETS[i];
+    ir_scaling[i] = SAVED_IR_SCALING[i];
+  }
 }
 
 

@@ -73,6 +73,9 @@ void IMU::reading_calibrate() {
     gyro_offsets[i] = coord_sums[i] / IMU_FAST_CALIBRATION_RUNS;
     accel_offsets[i] = accel_sums[i] / IMU_FAST_CALIBRATION_RUNS;
   }
+
+  // OLED::display_text("Gyro X Offset: " + String(gyro_offsets[0]) + ", Gyro Y Offset: " + String(gyro_offsets[1]) + ", Gyro Z Offset: " + String(gyro_offsets[2]) + 
+  // "Accel X Offset: " + String(accel_offsets[0]) + ", Accel Y Offset: " + String(accel_offsets[1]) + ", Accel Z Offset: " + String(accel_offsets[2]));
 }
 
 
@@ -90,6 +93,16 @@ void IMU::drift_calibrate() {
   gyro_z_drift = (final_z_angle_value - initial_z_angle_value) / IMU_SLOW_CALIBRATION_SECONDS;
   accel_x_drift = (final_x_accel_value - initial_x_accel_value) / IMU_SLOW_CALIBRATION_SECONDS;
 
+  // OLED::display_text("Gyro Z Drift: " + String(gyro_z_drift) + ", Accel X Drift: " + String(accel_x_drift));
+}
+
+void IMU::quick_calibration() {
+  for (int i = 0; i < 3; i++) {
+    gyro_offsets[i] = SAVED_GYRO_OFFSETS[i];
+    accel_offsets[i] = SAVED_ACCEL_OFFSETS[i];
+  }
+  gyro_z_drift = SAVED_Z_ANGLE_DRIFT;
+  accel_x_drift = SAVED_X_ACCEL_DRIFT;
 }
 
 void IMU::reset_quantities() {
