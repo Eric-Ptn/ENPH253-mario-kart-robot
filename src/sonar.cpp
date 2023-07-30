@@ -45,12 +45,10 @@ namespace sonar {
     }
 
     bool seeing_bridge(){
-        trigger_sonar(BRIDGE_SONAR_TRIGGER);
         return measure_distance(BRIDGE_SONAR_ECHO) < BRIDGE_DISTANCE;
     }
 
     bool seeing_wall(){
-        trigger_sonar(WALL_SONAR_TRIGGER);
         return measure_distance(WALL_SONAR_ECHO) < WALL_DISTANCE;
     }
 

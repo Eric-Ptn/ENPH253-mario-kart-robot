@@ -36,7 +36,7 @@ void TapeFollower::constant_offset_calibration() {
   }
 
   for(int i = 0; i < NUM_IR_SENSORS; i++) {
-    ir_offsets[i] = sensor_sums[i] / IR_CALIBRATION_RUNS - WHITE_THRESHOLD;
+    ir_offsets[i] = sensor_sums[i] / IR_CALIBRATION_RUNS;
   }
 }
 
@@ -63,13 +63,13 @@ void TapeFollower::scaling_offset_calibration() {
 
   for (int i = 0; i < NUM_IR_SENSORS; i++) {
     ir_scaling[i] = highest_average / sensor_averages[i];
-    ir_offsets[i] = highest_average - WHITE_THRESHOLD;
+    ir_offsets[i] = highest_average;
   }
 
 }
 
 
-void TapeFollower::follow_tape() {
+void TapeFollower::follow_tape(double duty_cycle_offset = 0) {
 
   // do weighted average to find current center of robot, ASSUMES EQUAL SPACING BETWEEN SENSORS
   double current_position = 0;
@@ -80,15 +80,17 @@ void TapeFollower::follow_tape() {
   }
 
   double error;
-  if (sum_of_weights < SAME_ERROR_THRESHOLD) { // use to have another negative offset - if not all black, calculate error else use old error
-    current_position /= sum_of_weights; // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
-    error = desired_center - current_position; // (ranges from 0 to desired_center - 1)
+  if (sum_of_weights < ERROR_MEMORY_THRESHOLD) {        // use to have another negative offset - if not all black, calculate error else use old error
+    current_position /= sum_of_weights;                 // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
+    error = desired_center - current_position;          // (ranges from 0 to desired_center - 1)
     // OLED::display_text("Normal error: "+ String(error));
   } else {
+    // if you don't see anything, assume the error was similar to before, and turn HARD in that direction
+    // unfortunately this is quite a banana prone implementation, may change later to just previous error
     if (last_error < 0) {
       error = -1 * SERVO_MAX_STEER;
     } else {
-      error = SERVO_MAX_STEER; // if you don't see anything, assume the error was similar to before, avoid division by zero problem as well
+      error = SERVO_MAX_STEER; 
     }
     // OLED::display_text("Remembered error: "+ String(error));
   }
@@ -120,18 +122,20 @@ void TapeFollower::follow_tape() {
 
   // OLED::display_text(servo_info);
 
-  // drive motors, slow down based on how far off you are (ex. turn)
   motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
-  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE - correction_val, false);
+  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false);
 }
 
 
 
 bool TapeFollower::seeing_white() {
+  double sum_readings = 0;
   for (int i = 0; i < NUM_IR_SENSORS; i++) {
-    if (processed_ir_reading(i) < 0) {
-      return false;
-    }
+    sum_readings += processed_ir_reading(i);
+  }
+
+  if (sum_readings < ERROR_MEMORY_THRESHOLD) {
+    return false;
   }
 
   return true;
@@ -139,18 +143,5 @@ bool TapeFollower::seeing_white() {
 
 
 bool TapeFollower::seeing_black() {
-  for (int i = 0; i < NUM_IR_SENSORS; i++) {
-    if (processed_ir_reading(i) == 0) {
-      return false;
-    }
-  }
-  
-  return true;
+  return !seeing_white();
 }
-
-// bool TapeFollower::test_bool(){
-//   if (millis() > 35000) {
-//     return true;
-//   }
-//   return false;
-// }

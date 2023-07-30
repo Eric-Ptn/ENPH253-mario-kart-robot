@@ -38,7 +38,7 @@ class TapeFollower {
         /*
         Purpose: PID routine to follow tape. 
         */
-        void follow_tape();
+        void follow_tape(double duty_cycle_offset = 0);
 
         // sensor events
         bool seeing_white();

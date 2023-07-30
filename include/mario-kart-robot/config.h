@@ -1,11 +1,5 @@
-#pragma once  // avoid circular inclusion
-#include <Arduino.h>
+#pragma once
 #include <math.h>
-#include <Adafruit_SSD1306.h>
-// #include <Adafruit_MPU6050.h>
-// #include <Adafruit_Sensor.h>
-
-// TODO: add PID constants
 
 // pins
 #define SERVO_PIN PA6
@@ -28,6 +22,8 @@
 #define WALL_SONAR_TRIGGER PA9
 #define WALL_SONAR_PWM_NAME PA_9  
 #define WALL_SONAR_ECHO PA12
+
+#define START_BUTTON PA10
 
 // #define CALIBRATION_PIN PB3
 // #define RUNNING_PIN PB4
@@ -52,30 +48,30 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
-#define IMU_FAST_CALIBRATION_RUNS 5000
+#define IMU_FAST_CALIBRATION_RUNS 1000
 #define IMU_SLOW_CALIBRATION_SECONDS 8
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
-#define WHITE_THRESHOLD 175
-#define SAME_ERROR_THRESHOLD -75
+#define ERROR_MEMORY_THRESHOLD -200 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
 
 // PWM frequencies (https://components101.com/motors/mg996r-servo-motor-datasheet)
 #define SERVO_FREQUENCY_HZ 50 // THIS SHOULD NOT CHANGE
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 24
-#define MOTOR_CORRECTION_SCALING 4 // arbitrary, find experimentally
-// #define MOTOR_CORRECTION_SCALING_INNER 2.5
-// #define MOTOR_CORRECTION_SCALING_OUTER 1.5
-#define CORRECTION_VAL_THRESHOLD 1 // if correction_val < CORRECTION_VAL_THRESHOLD then the scaling is the same for both motors
+#define DEFAULT_MOTOR_DUTY_CYCLE 24 // duty cycle for driving straight on smooth terrain
+#define MAX_DUTY_CYCLE_BOOST_OUTER 6  // max duty cycle boost for sharpest turn
+#define DUTY_CYCLE_REDUCTION_OUTER 2
+#define MAX_DUTY_CYCLE_BOOST_INNER 2
+#define DUTY_CYCLE_REDUCTION_INNER 4
+#define REDUCTION_DUTY_CYCLE_ANGLE 0.5 // not necessarily min... but close enough
+
 
 // angle tolerance for ending a gyro turn
 #define ANGLE_TOLERANCE_RADIANS 0.04
 
 // servo steering
-// #define SERVO_MOUNTING_ANGLE M_PI/6
 #define SERVO_MOUNTING_ANGLE 0.5
 #define SERVO_MAX_STEER 0.5
 
@@ -90,4 +86,4 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 // OLED
 const int SCREEN_WIDTH = 128;
 const int SCREEN_HEIGHT = 64;
-const int OLED_RESET = -1; // This display does not have a reset pin accessible
+const int OLED_RESET = -1; 

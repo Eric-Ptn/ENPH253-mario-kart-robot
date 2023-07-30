@@ -34,17 +34,8 @@ namespace motors {
   }
 
 
-  void left_motor_steering_drive(double steering_angle, bool reverse) {
-    double adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * (steering_angle - SERVO_MOUNTING_ANGLE);
-    if (adjusted_value < 10) {
-      adjusted_value = 10;
-    }
-    if (adjusted_value > DEFAULT_MOTOR_DUTY_CYCLE) {
-      adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE;
-    }
-    if (abs(steering_angle - SERVO_MAX_STEER) == SERVO_MOUNTING_ANGLE) {
-      adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE + 7;
-    }
+  void left_motor_steering_drive(double steering_angle, bool reverse, double constant_offset = 0) {
+    double adjusted_value = steering_duty_cycle(steering_angle, steering_angle < SERVO_MOUNTING_ANGLE, constant_offset);
     if (reverse) {
       left_motor_PWM(-1 * adjusted_value);
     } else {
@@ -64,22 +55,38 @@ namespace motors {
   }
 
 
-  void right_motor_steering_drive(double steering_angle, bool reverse) {
-    double adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE - MOTOR_CORRECTION_SCALING * (steering_angle - SERVO_MOUNTING_ANGLE);
-    if (adjusted_value < 10) {
-      adjusted_value = 10;
-    }
-    if (adjusted_value > DEFAULT_MOTOR_DUTY_CYCLE) {
-      adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE;
-    }
-    if (abs(steering_angle - SERVO_MAX_STEER) == SERVO_MOUNTING_ANGLE) {
-      adjusted_value = DEFAULT_MOTOR_DUTY_CYCLE + 9;
-    }
+  void right_motor_steering_drive(double steering_angle, bool reverse, double constant_offset = 0) {
+    double adjusted_value = steering_duty_cycle(steering_angle, steering_angle > SERVO_MOUNTING_ANGLE, constant_offset);
     if (reverse) {
       right_motor_PWM(-1 * adjusted_value);
     } else {
       right_motor_PWM(adjusted_value);
     }
   }
-  
+
+  // https://math.stackexchange.com/questions/2655178
+  // function to take in steering angle and output duty cycle based on parabolic function
+
+  // NOTE: steering_angle can be negative!
+  // see https://www.desmos.com/calculator/ad7njfzqat
+
+  double steering_duty_cycle(double steering_angle, bool outer, double constant_offset) {
+    double abs_angle = abs(steering_angle);
+
+    // first point: default duty cycle when steering angle is 0 (0, DEFAULT_MOTOR_DUTY_CYCLE)
+    double f1 = (abs_angle - (SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER)) * (abs_angle - REDUCTION_DUTY_CYCLE_ANGLE) / ((0 - (SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER)) * (0 - REDUCTION_DUTY_CYCLE_ANGLE));
+
+    // second point: duty cycle when steering angle is at min duty cycle angle
+    double f2 = (abs_angle - (SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER)) * (abs_angle - 0) / ((REDUCTION_DUTY_CYCLE_ANGLE - (SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER)) * (REDUCTION_DUTY_CYCLE_ANGLE - 0));
+
+    // third point: duty cycle when steering angle is max
+    double f3 = (abs_angle - REDUCTION_DUTY_CYCLE_ANGLE) * (abs_angle - 0) / (((SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) - REDUCTION_DUTY_CYCLE_ANGLE) * ((SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) - 0));
+
+    if (outer) {
+      return DEFAULT_MOTOR_DUTY_CYCLE * f1 + (DEFAULT_MOTOR_DUTY_CYCLE - DUTY_CYCLE_REDUCTION_OUTER) * f2 + (DEFAULT_MOTOR_DUTY_CYCLE + MAX_DUTY_CYCLE_BOOST_OUTER) * f3;
+    }
+    return DEFAULT_MOTOR_DUTY_CYCLE * f1 + (DEFAULT_MOTOR_DUTY_CYCLE - DUTY_CYCLE_REDUCTION_INNER) * f2 + (DEFAULT_MOTOR_DUTY_CYCLE + MAX_DUTY_CYCLE_BOOST_INNER) * f3;
+
+  }
+
 }

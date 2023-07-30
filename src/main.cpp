@@ -9,9 +9,34 @@
 IMU mpu6050;
 TapeFollower tape_follower;
 
+const int num_straights = 4;
+IMU::GyroMovement straight_moves[num_straights];
+
+const int num_turns = 6;
+IMU::GyroMovement turn_moves[num_turns];
+
+void reset_gyro_move_arrays() {
+  for (int i = 0; i < num_straights; i++) {
+    straight_moves[i] = IMU::GyroMovement(mpu6050);
+  }
+  for (int i = 0; i < num_turns; i++) {
+    turn_moves[i] = IMU::GyroMovement(mpu6050);
+  }
+}
+
 void setup() {
   // CHANGE WIRE OBJECT TO WORK ON SECOND I2C
   Wire.begin(uint32_t(PB11), uint32_t(PB10));
+  // Wire.setWireTimeout(3000 /* us */, true /* reset_on_timeout */); // unfortunately i don't think stm32 Wire has this function
+  
+  // i2c adafruit components
+  OLED::begin_oled();
+  mpu6050.begin_imu();
+
+  OLED::display_text("setting up...");
+
+  // initialize gyro movement objects
+  reset_gyro_move_arrays();
 
   // pins
   pinMode(SERVO_PIN, OUTPUT);
@@ -24,36 +49,31 @@ void setup() {
   pinMode(RIGHT_MOTOR_PIN, OUTPUT);
   pinMode(RIGHT_REVERSE_MOTOR_PIN, OUTPUT);
 
-  // uncomment this later lol, I just want the tone thingey to work. I hate u eric.
   pinMode(BRIDGE_SONAR_TRIGGER, OUTPUT);
   pinMode(BRIDGE_SONAR_ECHO, INPUT);
-  // pinMode(WALL_SONAR_TRIGGER, OUTPUT);
-  // pinMode(WALL_SONAR_ECHO, INPUT);
+  pinMode(WALL_SONAR_TRIGGER, OUTPUT);
+  pinMode(WALL_SONAR_ECHO, INPUT);
 
-  pinMode(PA10, INPUT_PULLUP);
-
-  // i2c adafruit components
-  OLED::begin_oled();
-
-
-  // mpu6050.begin_imu();
+  pinMode(START_BUTTON, INPUT_PULLUP);
 
   // gyro calibration
-  // OLED::display_text("fast calibration...");
-  // mpu6050.reading_calibrate();
-  // OLED::display_text("slow calibration...");
-  // mpu6050.drift_calibrate();
-  // mpu6050.reset_angle();
-  // // // mpu6050.reset_speed();
-  // OLED::display_text("done calibration!");
+  delay(1000);
+  OLED::display_text("fast calibration...");
+  mpu6050.reading_calibrate();
+  OLED::display_text("slow calibration...");
+  mpu6050.drift_calibrate();
+
+  mpu6050.reset_quantities();
 
   // ir calibration
   tape_follower.scaling_offset_calibration();
   motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 
+  OLED::display_text("done calibration!");
+
 
   while(1) {
-    if (digitalRead(PA10) == LOW) {
+    if (digitalRead(START_BUTTON) == LOW) {
         break;
     }
     delay(100);
@@ -85,9 +105,9 @@ void setup() {
 
 // TEST TAPE FOLLOWING PID
 
-void loop() {
-  tape_follower.follow_tape();
-}
+// void loop() {
+//   tape_follower.follow_tape();
+// }
 
 // SONAR DETECTION
 
@@ -133,139 +153,108 @@ void loop() {
   */
 //}
 
-// FULL STATE MACHINE PROGRAM ???
+// FULL STATE MACHINE LOOP
 
-// void setup() {
-//   // pins
-//   pinMode(SERVO_PIN, OUTPUT);
-//   for (int i = 0; i < NUM_IR_SENSORS; i++)  {
-//       pinMode(IR_PINS[i], INPUT);
-//   }
+enum ROBOT_STATES {
+  START,
+  GUN_FOR_BRIDGE_FROM_START,
+  GUN_FOR_WALL_FROM_BRIDGE,
+  WALL_RIDE,
+  UP_RAMP,
+  TURN_AFTER_FALL
+};
 
-//   pinMode(LEFT_MOTOR_PIN, OUTPUT);
-//   pinMode(LEFT_REVERSE_MOTOR_PIN, OUTPUT);
-//   pinMode(RIGHT_MOTOR_PIN, OUTPUT);
-//   pinMode(RIGHT_REVERSE_MOTOR_PIN, OUTPUT);
-
-//   pinMode(BRIDGE_SONAR_TRIGGER, OUTPUT);
-//   pinMode(BRIDGE_SONAR_ECHO, INPUT);
-//   pinMode(WALL_SONAR_TRIGGER, OUTPUT);
-//   pinMode(WALL_SONAR_ECHO, INPUT);
-
-//   pinMode(CALIBRATION_PIN, INPUT_PULLUP);
-//   pinMode(RUNNING_PIN, INPUT_PULLUP);
-
-//   // gyro and OLED connect to I2C pins, PB6 and PB7, but don't need to be included here
+enum ROBOT_STATES current_state = START;
 
 
-//   // i2c adafruit components
-//   begin_oled();
-//   begin_gyro();
+void loop() {
 
-//   servo_pwm(SERVO_MOUNTING_ANGLE);
+  mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP
 
-// }
+  switch (current_state) {
+    case START:
+      // tape follow until the first sharp turn (gyro reads 0), then switch to gun bridge
+      // alternatively may hardcode first turn
+      tape_follower.follow_tape();
+      if (mpu6050.correct_orientation(0)) {
+        current_state = GUN_FOR_BRIDGE_FROM_START;
+      }
+      break;
 
-// enum ROBOT_STATES {
-//   START,
-//   GUN_FOR_BRIDGE_FROM_START,
-//   GUN_FOR_WALL_FROM_BRIDGE,
-//   WALL_RIDE,
-//   UP_RAMP,
-//   TURN_AFTER_FALL,
-//   TURN_TO_FACE_BRIDGE
-// };
+    case GUN_FOR_BRIDGE_FROM_START:
+      sonar::trigger_sonar(BRIDGE_SONAR_TRIGGER);
 
-// enum ROBOT_STATES current_state = START;
+      auto bridge_ptr = std::bind(&sonar::seeing_bridge);
+      straight_moves[0].gyro_drive_straight_angle(0, bridge_ptr);
 
-// // can't loop the gyro turn, but need to loop the driving straight... doesn't work
+      if (straight_moves[0].complete()) {
+        current_state = GUN_FOR_WALL_FROM_BRIDGE;
+        sonar::stop_sonar(BRIDGE_SONAR_TRIGGER);
+      }
+      break;
 
-// bool calibrating = false;
-// bool running = false;
+    case GUN_FOR_WALL_FROM_BRIDGE:
+    // this will be different depending on starting location of robot
+      turn_moves[0].gyro_turn_absolute(-1, 0.8);
 
+      if (turn_moves[0].complete()) {
+        sonar::trigger_sonar(WALL_SONAR_TRIGGER);
 
-// void loop() {
-//   if (digitalRead(CALIBRATION_PIN) == LOW) {
-//     calibrating = true;
-//   }
-//   if (digitalRead(RUNNING_PIN) == LOW) {
-//     if (running) {
-//       running = false;
-//     } else {
-//       running = true;
-//     }
-//   }
-//   if (calibrating) {
-//     // ir calibration
-//     scaling_offset_tape_sensors();
-//     // gyro calibration
-//     velocity_calibrate();
-//     display_text("fast calibration complete!");
-//     delay(1000);
-//     display_text("slow calibration...");
-//     slow_calibrate();
-//     calibrating = false;
-//   }
-//   if (running) {
-//     calculate_angle();  // needs to be called in EVERY loop iteration, regardless of stage to keep gyro angle reading correct
+        auto wall_ptr = std::bind(&sonar::seeing_wall);
+        straight_moves[1].gyro_drive_straight_angle(-1, wall_ptr);
+      }
 
-//     switch (current_state) {
-//       case START:
-//         // alternatively, may tape follow until the first sharp turn (gyro reads 0), then switch to gun bridge
-//         left_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
-//         right_motor_PWM(DEFAULT_MOTOR_DUTY_CYCLE);
-//         delay(500); // this screws up gyro reading!!!!
-//         current_state = GUN_FOR_BRIDGE_FROM_START;
-//         break;
+      if (straight_moves[1].complete()) {
+        current_state = WALL_RIDE;
+        sonar::stop_sonar(WALL_SONAR_TRIGGER);
+      }
+      break;
 
-//       case GUN_FOR_BRIDGE_FROM_START:
-//         gyro_turn_absolute(0, 0.8);
-//         drive_straight_angle_pid(0);
+    case WALL_RIDE:
+      turn_moves[1].gyro_turn_absolute(0, 0.8);
 
-//         trigger_sonar(BRIDGE_SONAR_TRIGGER);
-//         if (measure_distance(BRIDGE_SONAR_ECHO) < BRIDGE_DISTANCE) {
-//           current_state = GUN_FOR_WALL_FROM_BRIDGE;
-//         }
-//         break;
+      if (turn_moves[1].complete()) {
+        auto black_tape_ptr = std::bind(&TapeFollower::seeing_black, tape_follower);
+        straight_moves[1].gyro_drive_straight_angle(0, black_tape_ptr);
+      }
 
-//       case GUN_FOR_WALL_FROM_BRIDGE:
-//         gyro_turn_absolute(-1, 0.8);
-//         drive_straight_angle_pid(-1);
+      if (straight_moves[1].complete()) {
+        current_state = UP_RAMP;
+      }
+      break;
+    
+    case UP_RAMP:
+      // alternatively, tape follow up the ramp and go straight at signal, then may hardcode only 90 deg turn
 
-//         trigger_sonar(WALL_SONAR_TRIGGER);
-//         if (measure_distance(WALL_SONAR_ECHO) < WALL_DISTANCE) {
-//           current_state = WALL_RIDE;
-//         }
-//         break;
+      turn_moves[2].gyro_turn_absolute(M_PI / 2, 0.8);
+      if (turn_moves[2].complete()) {
+        turn_moves[3].gyro_turn_absolute(M_PI, 0.8);
+      }
+      if (turn_moves[3].complete()) {
+        auto falling_ptr = std::bind(&IMU::robot_falling, mpu6050);
+        straight_moves[2].gyro_drive_straight_angle(M_PI, falling_ptr, 5);
+      }
+      if (straight_moves[2].complete()) {
+        current_state = TURN_AFTER_FALL;
+      }
+      break;
 
-//       case WALL_RIDE:
-//         gyro_turn_absolute(0, 0.8);
-//         drive_straight_angle_pid(0);
-//         if (seeing_black()) {
-//           current_state = UP_RAMP;
-//         }
-//         break;
-      
-//       case UP_RAMP:
-//         // alternatively, tape follow up the ramp
-//         gyro_turn_absolute(-1 * M_PI / 2, 0.8);
-//         gyro_turn_absolute(-1 * M_PI, 0.8);
-//         drive_straight_angle_pid(-1 * M_PI);
-//         if (robot_falling()) {
-//           current_state = TURN_AFTER_FALL;
-//         }
+    case TURN_AFTER_FALL:
+      turn_moves[4].gyro_turn_absolute(-1 * M_PI / 2, 0.4, 5);
 
-//       case TURN_AFTER_FALL:
-//         gyro_turn_absolute(M_PI / 2, 0.4);
-//         drive_straight_angle_pid(M_PI / 2);
-//         if (seeing_white()) {
-//           current_state = TURN_TO_FACE_BRIDGE;
-//         }
+      if (tape_follower.seeing_white() && turn_moves[4].complete()) {
+        turn_moves[5].gyro_turn_absolute(0, 0.4);
+      } else if (turn_moves[4].complete()) {
+        // keep moving forward if you're done the 90 deg turn but haven't seen white yet
+        auto white_bg_ptr = std::bind(&TapeFollower::seeing_white, tape_follower);
+        straight_moves[3].gyro_drive_straight_angle(-1 * M_PI / 2, white_bg_ptr, 5);
+      }
 
-//       case TURN_TO_FACE_BRIDGE:
+      if (turn_moves[5].complete()) {
+        current_state = GUN_FOR_BRIDGE_FROM_START;
+        reset_gyro_move_arrays();
+      }
+      break;
 
-//     }
-//   }
-
-  
-// }
+  }
+}
