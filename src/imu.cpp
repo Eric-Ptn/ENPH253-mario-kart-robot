@@ -35,7 +35,7 @@ void IMU::read_imu() {
 }
 
 
-double IMU::calculate_quantities() {
+void IMU::calculate_quantities() {
   read_imu();
 
   double dt = (millis() - last_imu_time) / 1000;
@@ -140,7 +140,7 @@ IMU::GyroMovement::GyroMovement(IMU &parent_imu) {
 }
 
 
-void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_steering_angle, double duty_cycle_offset = 0) {
+void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_steering_angle, double duty_cycle_offset) {
 
     if (completed) {return;}
 
@@ -164,7 +164,7 @@ void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_s
 }
 
 
-void IMU::GyroMovement::gyro_turn_relative(double turn_angle, double servo_steering_angle, double duty_cycle_offset = 0) {
+void IMU::GyroMovement::gyro_turn_relative(double turn_angle, double servo_steering_angle, double duty_cycle_offset) {
 
    double final_absolute_angle = (*imu).circular_correction((*imu).angle + turn_angle);
    gyro_turn_absolute(final_absolute_angle, servo_steering_angle, duty_cycle_offset);
@@ -172,7 +172,7 @@ void IMU::GyroMovement::gyro_turn_relative(double turn_angle, double servo_steer
 }
 
 
-void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::function<bool()> stop_condition, double duty_cycle_offset = 0) {
+void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::function<bool()> stop_condition, double duty_cycle_offset) {
 
   if (completed) {return;}
 

@@ -2,6 +2,7 @@
 #include <math.h>
 #include <mario-kart-robot\motors.h>
 #include <mario-kart-robot\config.h>
+#include <mario-kart-robot\oled_display.h>
 
 namespace motors {
 
@@ -34,13 +35,14 @@ namespace motors {
   }
 
 
-  void left_motor_steering_drive(double steering_angle, bool reverse, double constant_offset = 0) {
+  void left_motor_steering_drive(double steering_angle, bool reverse, double constant_offset) {
     double adjusted_value = steering_duty_cycle(steering_angle, steering_angle < SERVO_MOUNTING_ANGLE, constant_offset);
     if (reverse) {
       left_motor_PWM(-1 * adjusted_value);
     } else {
       left_motor_PWM(adjusted_value);
     }
+    // OLED::display_text(String(adjusted_value) + " Outer: " + String(steering_angle < SERVO_MOUNTING_ANGLE) + " Steering angle: " + String(steering_angle));
   }
 
 
@@ -55,13 +57,14 @@ namespace motors {
   }
 
 
-  void right_motor_steering_drive(double steering_angle, bool reverse, double constant_offset = 0) {
+  void right_motor_steering_drive(double steering_angle, bool reverse, double constant_offset) {
     double adjusted_value = steering_duty_cycle(steering_angle, steering_angle > SERVO_MOUNTING_ANGLE, constant_offset);
     if (reverse) {
       right_motor_PWM(-1 * adjusted_value);
     } else {
       right_motor_PWM(adjusted_value);
     }
+    // OLED::display_text(String(adjusted_value));
   }
 
   // https://math.stackexchange.com/questions/2655178
@@ -71,21 +74,21 @@ namespace motors {
   // see https://www.desmos.com/calculator/ad7njfzqat
 
   double steering_duty_cycle(double steering_angle, bool outer, double constant_offset) {
-    double abs_angle = abs(steering_angle);
+    double abs_angle = abs(steering_angle - SERVO_MOUNTING_ANGLE);
 
-    // first point: default duty cycle when steering angle is 0 (0, DEFAULT_MOTOR_DUTY_CYCLE)
-    double f1 = (abs_angle - (SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER)) * (abs_angle - REDUCTION_DUTY_CYCLE_ANGLE) / ((0 - (SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER)) * (0 - REDUCTION_DUTY_CYCLE_ANGLE));
+    // first point: default duty cycle when steering angle is SERVO_MOUNTING_ANGLE (SERVO_MOUNTING_ANGLE, DEFAULT_MOTOR_DUTY_CYCLE)
+    double f1 = (abs_angle - SERVO_MAX_STEER) * (abs_angle - (REDUCTION_DUTY_CYCLE_ANGLE - SERVO_MOUNTING_ANGLE)) / ((0 - SERVO_MAX_STEER) * (0 - (REDUCTION_DUTY_CYCLE_ANGLE - SERVO_MOUNTING_ANGLE)));
 
     // second point: duty cycle when steering angle is at min duty cycle angle
-    double f2 = (abs_angle - (SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER)) * (abs_angle - 0) / ((REDUCTION_DUTY_CYCLE_ANGLE - (SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER)) * (REDUCTION_DUTY_CYCLE_ANGLE - 0));
+    double f2 = (abs_angle - SERVO_MAX_STEER) * (abs_angle - 0) / (((REDUCTION_DUTY_CYCLE_ANGLE - SERVO_MOUNTING_ANGLE) - 0) * ((REDUCTION_DUTY_CYCLE_ANGLE - SERVO_MOUNTING_ANGLE) - SERVO_MAX_STEER));
 
     // third point: duty cycle when steering angle is max
-    double f3 = (abs_angle - REDUCTION_DUTY_CYCLE_ANGLE) * (abs_angle - 0) / (((SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) - REDUCTION_DUTY_CYCLE_ANGLE) * ((SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) - 0));
+    double f3 = (abs_angle - (REDUCTION_DUTY_CYCLE_ANGLE - SERVO_MOUNTING_ANGLE)) * (abs_angle - 0) / ((SERVO_MAX_STEER - 0) * (SERVO_MAX_STEER - (REDUCTION_DUTY_CYCLE_ANGLE - SERVO_MOUNTING_ANGLE)));
 
     if (outer) {
-      return DEFAULT_MOTOR_DUTY_CYCLE * f1 + (DEFAULT_MOTOR_DUTY_CYCLE - DUTY_CYCLE_REDUCTION_OUTER) * f2 + (DEFAULT_MOTOR_DUTY_CYCLE + MAX_DUTY_CYCLE_BOOST_OUTER) * f3;
+      return DEFAULT_MOTOR_DUTY_CYCLE * f1 + (DEFAULT_MOTOR_DUTY_CYCLE - DUTY_CYCLE_REDUCTION_OUTER) * f2 + (DEFAULT_MOTOR_DUTY_CYCLE + MAX_DUTY_CYCLE_BOOST_OUTER) * f3 + constant_offset;
     }
-    return DEFAULT_MOTOR_DUTY_CYCLE * f1 + (DEFAULT_MOTOR_DUTY_CYCLE - DUTY_CYCLE_REDUCTION_INNER) * f2 + (DEFAULT_MOTOR_DUTY_CYCLE + MAX_DUTY_CYCLE_BOOST_INNER) * f3;
+    return DEFAULT_MOTOR_DUTY_CYCLE * f1 + (DEFAULT_MOTOR_DUTY_CYCLE - DUTY_CYCLE_REDUCTION_INNER) * f2 + (DEFAULT_MOTOR_DUTY_CYCLE + MAX_DUTY_CYCLE_BOOST_INNER) * f3 + constant_offset;
 
   }
 

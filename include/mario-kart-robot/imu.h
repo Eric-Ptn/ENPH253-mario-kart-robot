@@ -48,7 +48,7 @@ class IMU{
         Alters: angle (angle of the gyro, calibrated to 0 at beginning), velocity (speed of the gyro, calibrated to 0 at beginning)
         NOTE*: This function MUST be called in every loop iteration of the main program to keep integration up to date.
         */
-        double calculate_quantities();
+        void calculate_quantities();
 
         // CALIBRATION **********************************************************************************************************************
 

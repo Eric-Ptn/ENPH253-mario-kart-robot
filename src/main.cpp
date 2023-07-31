@@ -9,20 +9,20 @@
 IMU mpu6050;
 TapeFollower tape_follower;
 
-const int num_straights = 4;
-IMU::GyroMovement straight_moves[num_straights];
+// const int num_straights = 4;
+// IMU::GyroMovement* straight_moves[num_straights];
 
-const int num_turns = 6;
-IMU::GyroMovement turn_moves[num_turns];
+// const int num_turns = 6;
+// IMU::GyroMovement* turn_moves[num_turns];
 
-void reset_gyro_move_arrays() {
-  for (int i = 0; i < num_straights; i++) {
-    straight_moves[i] = IMU::GyroMovement(mpu6050);
-  }
-  for (int i = 0; i < num_turns; i++) {
-    turn_moves[i] = IMU::GyroMovement(mpu6050);
-  }
-}
+// void reset_gyro_move_arrays() {
+//   for (int i = 0; i < num_straights; i++) {
+//     straight_moves[i] = new IMU::GyroMovement(mpu6050);
+//   }
+//   for (int i = 0; i < num_turns; i++) {
+//     turn_moves[i] = new IMU::GyroMovement(mpu6050);
+//   }
+// }
 
 void setup() {
   // CHANGE WIRE OBJECT TO WORK ON SECOND I2C
@@ -36,7 +36,7 @@ void setup() {
   OLED::display_text("setting up...");
 
   // initialize gyro movement objects
-  reset_gyro_move_arrays();
+  // reset_gyro_move_arrays();
 
   // pins
   pinMode(SERVO_PIN, OUTPUT);
@@ -57,20 +57,22 @@ void setup() {
   pinMode(START_BUTTON, INPUT_PULLUP);
 
   // gyro calibration
-  delay(1000);
-  OLED::display_text("fast calibration...");
-  mpu6050.reading_calibrate();
-  OLED::display_text("slow calibration...");
-  mpu6050.drift_calibrate();
-  mpu6050.velocity_linear_correction();
+  // delay(1000);
+  // OLED::display_text("gyro fast calibration...");
+  // mpu6050.reading_calibrate();
+  // OLED::display_text("gyro slow calibration...");
+  // mpu6050.drift_calibrate();
+  // mpu6050.velocity_linear_correction();
 
-  mpu6050.reset_quantities();
+  // mpu6050.reset_quantities();
 
   // ir calibration
+  delay(100);
+  OLED::display_text("tape calibration: move tape under robot...");
   tape_follower.tape_calibration();
-  motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+  // tape_follower.scaling_offset_calibration();
 
-  OLED::display_text("done calibration!");
+  // OLED::display_text("done calibration!");
 
 
   while(1) {
@@ -79,6 +81,9 @@ void setup() {
     }
     delay(100);
   }
+
+ motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+
 }
 
 // TEST GYRO STRAIGHT PID
@@ -106,9 +111,9 @@ void setup() {
 
 // TEST TAPE FOLLOWING PID
 
-// void loop() {
-//   tape_follower.follow_tape();
-// }
+void loop() {
+  tape_follower.follow_tape();
+}
 
 // SONAR DETECTION
 
@@ -156,106 +161,106 @@ void setup() {
 
 // FULL STATE MACHINE LOOP
 
-enum ROBOT_STATES {
-  START,
-  GUN_FOR_BRIDGE_FROM_START,
-  GUN_FOR_WALL_FROM_BRIDGE,
-  WALL_RIDE,
-  UP_RAMP,
-  TURN_AFTER_FALL
-};
+// enum ROBOT_STATES {
+//   START,
+//   GUN_FOR_BRIDGE_FROM_START,
+//   GUN_FOR_WALL_FROM_BRIDGE,
+//   WALL_RIDE,
+//   UP_RAMP,
+//   TURN_AFTER_FALL
+// };
 
-enum ROBOT_STATES current_state = START;
+// enum ROBOT_STATES current_state = START;
 
 
-void loop() {
+// void loop() {
 
-  mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP
+//   mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP
 
-  switch (current_state) {
-    case START:
-      // tape follow until the first sharp turn (gyro reads 0), then switch to gun bridge
-      // alternatively may hardcode first turn
-      tape_follower.follow_tape();
-      if (mpu6050.correct_orientation(0)) {
-        current_state = GUN_FOR_BRIDGE_FROM_START;
-      }
-      break;
+//   switch (current_state) {
+//     case START:
+//       // tape follow until the first sharp turn (gyro reads 0), then switch to gun bridge
+//       // alternatively may hardcode first turn
+//       tape_follower.follow_tape();
+//       if (mpu6050.correct_orientation(0)) {
+//         current_state = GUN_FOR_BRIDGE_FROM_START;
+//       }
+//       break;
 
-    case GUN_FOR_BRIDGE_FROM_START:
-      sonar::trigger_sonar(BRIDGE_SONAR_TRIGGER);
+//     case GUN_FOR_BRIDGE_FROM_START:
+//       sonar::trigger_sonar(BRIDGE_SONAR_TRIGGER);
 
-      auto bridge_ptr = std::bind(&sonar::seeing_bridge);
-      straight_moves[0].gyro_drive_straight_angle(0, bridge_ptr);
+//       auto bridge_ptr = std::bind(&sonar::seeing_bridge);
+//       straight_moves[0].gyro_drive_straight_angle(0, bridge_ptr);
 
-      if (straight_moves[0].complete()) {
-        current_state = GUN_FOR_WALL_FROM_BRIDGE;
-        sonar::stop_sonar(BRIDGE_SONAR_TRIGGER);
-      }
-      break;
+//       if (straight_moves[0].complete()) {
+//         current_state = GUN_FOR_WALL_FROM_BRIDGE;
+//         sonar::stop_sonar(BRIDGE_SONAR_TRIGGER);
+//       }
+//       break;
 
-    case GUN_FOR_WALL_FROM_BRIDGE:
-    // this will be different depending on starting location of robot
-      turn_moves[0].gyro_turn_absolute(-1, 0.8);
+//     case GUN_FOR_WALL_FROM_BRIDGE:
+//     // this will be different depending on starting location of robot
+//       turn_moves[0].gyro_turn_absolute(-1, 0.8);
 
-      if (turn_moves[0].complete()) {
-        sonar::trigger_sonar(WALL_SONAR_TRIGGER);
+//       if (turn_moves[0].complete()) {
+//         sonar::trigger_sonar(WALL_SONAR_TRIGGER);
 
-        auto wall_ptr = std::bind(&sonar::seeing_wall);
-        straight_moves[1].gyro_drive_straight_angle(-1, wall_ptr);
-      }
+//         auto wall_ptr = std::bind(&sonar::seeing_wall);
+//         straight_moves[1].gyro_drive_straight_angle(-1, wall_ptr);
+//       }
 
-      if (straight_moves[1].complete()) {
-        current_state = WALL_RIDE;
-        sonar::stop_sonar(WALL_SONAR_TRIGGER);
-      }
-      break;
+//       if (straight_moves[1].complete()) {
+//         current_state = WALL_RIDE;
+//         sonar::stop_sonar(WALL_SONAR_TRIGGER);
+//       }
+//       break;
 
-    case WALL_RIDE:
-      turn_moves[1].gyro_turn_absolute(0, 0.8);
+//     case WALL_RIDE:
+//       turn_moves[1].gyro_turn_absolute(0, 0.8);
 
-      if (turn_moves[1].complete()) {
-        auto black_tape_ptr = std::bind(&TapeFollower::seeing_black, tape_follower);
-        straight_moves[1].gyro_drive_straight_angle(0, black_tape_ptr);
-      }
+//       if (turn_moves[1].complete()) {
+//         auto black_tape_ptr = std::bind(&TapeFollower::seeing_black, tape_follower);
+//         straight_moves[1].gyro_drive_straight_angle(0, black_tape_ptr);
+//       }
 
-      if (straight_moves[1].complete()) {
-        current_state = UP_RAMP;
-      }
-      break;
+//       if (straight_moves[1].complete()) {
+//         current_state = UP_RAMP;
+//       }
+//       break;
     
-    case UP_RAMP:
-      // alternatively, tape follow up the ramp and go straight at signal, then may hardcode only 90 deg turn
+//     case UP_RAMP:
+//       // alternatively, tape follow up the ramp and go straight at signal, then may hardcode only 90 deg turn
 
-      turn_moves[2].gyro_turn_absolute(M_PI / 2, 0.8);
-      if (turn_moves[2].complete()) {
-        turn_moves[3].gyro_turn_absolute(M_PI, 0.8);
-      }
-      if (turn_moves[3].complete()) {
-        auto falling_ptr = std::bind(&IMU::robot_falling, mpu6050);
-        straight_moves[2].gyro_drive_straight_angle(M_PI, falling_ptr, 5);
-      }
-      if (straight_moves[2].complete()) {
-        current_state = TURN_AFTER_FALL;
-      }
-      break;
+//       turn_moves[2].gyro_turn_absolute(M_PI / 2, 0.8);
+//       if (turn_moves[2].complete()) {
+//         turn_moves[3].gyro_turn_absolute(M_PI, 0.8);
+//       }
+//       if (turn_moves[3].complete()) {
+//         auto falling_ptr = std::bind(&IMU::robot_falling, mpu6050);
+//         straight_moves[2].gyro_drive_straight_angle(M_PI, falling_ptr, 5);
+//       }
+//       if (straight_moves[2].complete()) {
+//         current_state = TURN_AFTER_FALL;
+//       }
+//       break;
 
-    case TURN_AFTER_FALL:
-      turn_moves[4].gyro_turn_absolute(-1 * M_PI / 2, 0.4, 5);
+//     case TURN_AFTER_FALL:
+//       turn_moves[4].gyro_turn_absolute(-1 * M_PI / 2, 0.4, 5);
 
-      if (tape_follower.seeing_white() && turn_moves[4].complete()) {
-        turn_moves[5].gyro_turn_absolute(0, 0.4);
-      } else if (turn_moves[4].complete()) {
-        // keep moving forward if you're done the 90 deg turn but haven't seen white yet
-        auto white_bg_ptr = std::bind(&TapeFollower::seeing_white, tape_follower);
-        straight_moves[3].gyro_drive_straight_angle(-1 * M_PI / 2, white_bg_ptr, 5);
-      }
+//       if (tape_follower.seeing_white() && turn_moves[4].complete()) {
+//         turn_moves[5].gyro_turn_absolute(0, 0.4);
+//       } else if (turn_moves[4].complete()) {
+//         // keep moving forward if you're done the 90 deg turn but haven't seen white yet
+//         auto white_bg_ptr = std::bind(&TapeFollower::seeing_white, tape_follower);
+//         straight_moves[3].gyro_drive_straight_angle(-1 * M_PI / 2, white_bg_ptr, 5);
+//       }
 
-      if (turn_moves[5].complete()) {
-        current_state = GUN_FOR_BRIDGE_FROM_START;
-        reset_gyro_move_arrays();
-      }
-      break;
+//       if (turn_moves[5].complete()) {
+//         current_state = GUN_FOR_BRIDGE_FROM_START;
+//         reset_gyro_move_arrays();
+//       }
+//       break;
 
-  }
-}
+//   }
+// }
