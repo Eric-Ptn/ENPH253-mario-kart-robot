@@ -79,6 +79,43 @@ void TapeFollower::quick_calibration() {
   }
 }
 
+void TapeFollower::tape_calibration() {
+
+  int ir_maxs[NUM_IR_SENSORS];
+  std::fill(ir_maxs, ir_maxs + NUM_IR_SENSORS, -1023);
+
+  int ir_mins[NUM_IR_SENSORS] = {0};
+
+  motors::left_motor_PWM(25);
+  motors::right_motor_PWM(25);
+
+  double start_time = millis();
+  while (millis() - start_time < 3000) {
+
+    for (int i = 0; i < NUM_IR_SENSORS; i++) {
+      int ir_reading = analogRead(IR_PINS[i]);
+
+      if (ir_reading > ir_maxs[i]) {
+        ir_maxs[i] = ir_reading;
+      }
+      if (ir_reading < ir_mins[i]) {
+        ir_mins[i] = ir_reading;
+      }
+
+    }
+
+  }
+
+  for (int i = 0; i < NUM_IR_SENSORS; i++) {
+    ir_scaling[i] = (WHITE_VALUE - BLACK_VALUE) / (ir_maxs[i] - ir_mins[i]); // slope of line
+    ir_offsets[i] = WHITE_VALUE - ir_scaling[i] * ir_maxs[i]; // y-intercept of line, b = y - mx
+  }
+
+  motors::left_motor_PWM(0);
+  motors::right_motor_PWM(0);
+
+}
+
 
 void TapeFollower::follow_tape(double duty_cycle_offset = 0) {
 

@@ -50,10 +50,13 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 // gyro calibration values
 #define IMU_FAST_CALIBRATION_RUNS 1000
 #define IMU_SLOW_CALIBRATION_SECONDS 8
+#define IMU_VELOCITY_FIT_RUNS 50
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
 #define ERROR_MEMORY_THRESHOLD -200 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
+#define WHITE_VALUE 0
+#define BLACK_VALUE -600
 
 // ir and gyro quick calibration - i could use EEPROM but that's too much work
 const double SAVED_IR_SCALING[] = {1.0, 1.0, 1.0, 1.0};
@@ -62,6 +65,7 @@ const double SAVED_GYRO_OFFSETS[] = {0, 0, 0};
 const double SAVED_ACCEL_OFFSETS[] = {0, 0, 0};
 const int SAVED_Z_ANGLE_DRIFT = 0;
 const int SAVED_X_ACCEL_DRIFT = 0;
+const int SAVED_VELOCITY_DRIFT = 0;
 
 // PWM frequencies (https://components101.com/motors/mg996r-servo-motor-datasheet)
 #define SERVO_FREQUENCY_HZ 50 // THIS SHOULD NOT CHANGE

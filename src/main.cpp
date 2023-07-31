@@ -62,11 +62,12 @@ void setup() {
   mpu6050.reading_calibrate();
   OLED::display_text("slow calibration...");
   mpu6050.drift_calibrate();
+  mpu6050.velocity_linear_correction();
 
   mpu6050.reset_quantities();
 
   // ir calibration
-  tape_follower.scaling_offset_calibration();
+  tape_follower.tape_calibration();
   motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 
   OLED::display_text("done calibration!");

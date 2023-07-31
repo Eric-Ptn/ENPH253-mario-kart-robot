@@ -32,8 +32,9 @@ class TapeFollower {
 
         // calibration
         void constant_offset_calibration();
-        void scaling_offset_calibration(); // recommended, scales sensitivity of each sensor to be about the same
+        void scaling_offset_calibration(); 
         void quick_calibration(); // uses previously saved values in config
+        void tape_calibration(); // recommended, scales sensitivity of each sensor to be about the same by calibrating on black and white
 
         // tape following
         /*

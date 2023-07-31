@@ -17,6 +17,7 @@ class IMU{
         double accel_offsets[3];
         double gyro_z_drift = 0;
         double accel_x_drift = 0;
+        double velocity_drift = 0;
 
         // gyro calculating angle
         double angle = 0;
@@ -64,6 +65,7 @@ class IMU{
         */
         void drift_calibrate();
         void quick_calibration(); // uses previously saved values in config
+        void velocity_linear_correction(); // corrects velocity for drift using linear least squares fit
 
         void reset_quantities();
 

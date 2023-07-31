@@ -48,7 +48,7 @@ double IMU::calculate_quantities() {
     angle += 2 * M_PI;
   }
 
-  velocity += accel_readings[0] * dt - accel_x_drift * pow(dt, 2.0);
+  velocity += accel_readings[0] * dt - velocity_drift * dt - accel_x_drift * pow(dt, 2.0);
 
   last_imu_time = millis();
 
@@ -103,12 +103,36 @@ void IMU::quick_calibration() {
   }
   gyro_z_drift = SAVED_Z_ANGLE_DRIFT;
   accel_x_drift = SAVED_X_ACCEL_DRIFT;
+  velocity_drift = SAVED_VELOCITY_DRIFT;
 }
 
 void IMU::reset_quantities() {
   angle = 0;
   velocity = 0;
   last_imu_time = millis();
+}
+
+
+// https://www.youtube.com/watch?v=SCZBaOkHB_Y (subtracting linear drift)
+// https://www.youtube.com/watch?v=P8hT5nDai6A (how to do linear least squares fit)
+void IMU::velocity_linear_correction() {
+
+  double sum_times = 0;
+  double sum_velocity = 0;
+  double sum_times_squared = 0;
+  double sum_times_velocity = 0;
+
+  for (int i = 0; i < IMU_VELOCITY_FIT_RUNS; i++) {
+    calculate_quantities();
+    double time = millis();
+    sum_times += time;
+    sum_velocity += velocity;
+    sum_times_squared += pow(time, 2.0);
+    sum_times_velocity += time * velocity;
+  }
+
+  velocity_drift = (IMU_VELOCITY_FIT_RUNS * sum_times_velocity - sum_times * sum_velocity) / (IMU_VELOCITY_FIT_RUNS * sum_times_squared - pow(sum_times, 2.0));
+  // OLED::display_text("Velocity Drift: " + String(velocity_drift));
 }
 
 IMU::GyroMovement::GyroMovement(IMU &parent_imu) {
