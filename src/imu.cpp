@@ -144,6 +144,11 @@ void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_s
 
     if (completed) {return;}
 
+    // return if you're spamming PWM too fast
+    if (millis() - last_motor_time < 1000 / SERVO_FREQUENCY_HZ) {
+      return;
+    }
+
     double angle_difference = (*imu).circular_correction(absolute_angle - (*imu).angle);
 
     if (angle_difference > 0) {
@@ -156,6 +161,8 @@ void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_s
     motors::servo_pwm(SERVO_MOUNTING_ANGLE + servo_steering_angle);
     motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false, duty_cycle_offset);
     motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false, duty_cycle_offset);
+
+    last_motor_time = millis();
 
     if (abs(angle_difference) < ANGLE_TOLERANCE_RADIANS) {
       completed = true;
@@ -175,6 +182,11 @@ void IMU::GyroMovement::gyro_turn_relative(double turn_angle, double servo_steer
 void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::function<bool()> stop_condition, double duty_cycle_offset) {
 
   if (completed) {return;}
+
+  // return if you're spamming PWM too fast
+  if (millis() - last_motor_time < 1000 / SERVO_FREQUENCY_HZ) {
+    return;
+  }
 
   double error = (*imu).circular_correction(target_angle - (*imu).angle);
 
@@ -199,6 +211,8 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::func
   motors::servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
   motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, duty_cycle_offset);
   motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, duty_cycle_offset);
+
+  last_motor_time = millis();
 
   if (stop_condition()) {
     completed = true;

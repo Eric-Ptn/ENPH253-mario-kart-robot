@@ -134,12 +134,18 @@ void TapeFollower::tape_calibration() {
 
 void TapeFollower::follow_tape(double duty_cycle_offset) {
 
+  // return if you're spamming PWM too fast
+  if (millis() - last_motor_time < 1000 / SERVO_FREQUENCY_HZ) {
+    return;
+  }
+
   // do weighted average to find current center of robot, ASSUMES EQUAL SPACING BETWEEN SENSORS
   double current_position = 0;
   double sum_of_weights = 0;
   for(int i = 1; i <= NUM_IR_SENSORS; i++){  // cannot be zero-indexed because it screws up the weighted average
-    current_position += processed_ir_reading(i - 1) * i; // careful here! i is 1-indexed, ir_readings is 0-indexed
-    sum_of_weights += processed_ir_reading(i - 1);
+    double processed_reading = processed_ir_reading(i - 1); // careful here! i is 1-indexed, ir_readings is 0-indexed
+    current_position += processed_reading * i; 
+    sum_of_weights += processed_reading;
   }
 
   double error;
@@ -197,6 +203,9 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
 
   motors::left_motor_steering_drive(servo_angle, false);
   motors::right_motor_steering_drive(servo_angle, false);
+
+  last_motor_time = millis();
+
 }
 
 

@@ -24,6 +24,8 @@ class TapeFollower {
         const double Kd = TAPE_FOLLOWING_KD;
         const double Ki = TAPE_FOLLOWING_KI;
 
+        double last_motor_time = 0; // time of last motor update, do not want to spam motors faster than their accepted pwm frequency
+
     public:
         TapeFollower();
 
@@ -33,9 +35,9 @@ class TapeFollower {
 
         // calibration
         void constant_offset_calibration();
-        void scaling_offset_calibration(); 
+        void scaling_offset_calibration(); // recommended rn
         void quick_calibration(); // uses previously saved values in config
-        void tape_calibration(); // recommended, scales sensitivity of each sensor to be about the same by calibrating on black and white
+        void tape_calibration(); // doesn't seem to work properly idk why
 
         // tape following
         /*

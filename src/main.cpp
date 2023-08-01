@@ -9,20 +9,20 @@
 IMU mpu6050;
 TapeFollower tape_follower;
 
-// const int num_straights = 4;
-// IMU::GyroMovement* straight_moves[num_straights];
+const int num_straights = 4;
+IMU::GyroMovement* straight_moves[num_straights];
 
-// const int num_turns = 6;
-// IMU::GyroMovement* turn_moves[num_turns];
+const int num_turns = 6;
+IMU::GyroMovement* turn_moves[num_turns];
 
-// void reset_gyro_move_arrays() {
-//   for (int i = 0; i < num_straights; i++) {
-//     straight_moves[i] = new IMU::GyroMovement(mpu6050);
-//   }
-//   for (int i = 0; i < num_turns; i++) {
-//     turn_moves[i] = new IMU::GyroMovement(mpu6050);
-//   }
-// }
+void reset_gyro_move_arrays() {
+  for (int i = 0; i < num_straights; i++) {
+    straight_moves[i] = new IMU::GyroMovement(mpu6050);
+  }
+  for (int i = 0; i < num_turns; i++) {
+    turn_moves[i] = new IMU::GyroMovement(mpu6050);
+  }
+}
 
 void setup() {
   // CHANGE WIRE OBJECT TO WORK ON SECOND I2C
@@ -36,7 +36,7 @@ void setup() {
   OLED::display_text("setting up...");
 
   // initialize gyro movement objects
-  // reset_gyro_move_arrays();
+  reset_gyro_move_arrays();
 
   // pins
   pinMode(SERVO_PIN, OUTPUT);
@@ -68,7 +68,7 @@ void setup() {
 
   // ir calibration
   delay(100);
-  OLED::display_text("tape calibration: move tape under robot...");
+  OLED::display_text("calibrating...");
   // tape_follower.tape_calibration();
   tape_follower.scaling_offset_calibration();
 
@@ -114,12 +114,13 @@ void setup() {
 
 // TEST TAPE FOLLOWING PID
 
-double last_time = 0;
+// double last_time = 0;
 
 void loop() {
   tape_follower.follow_tape();
-  OLED::display_text(String(millis() - last_time));
-  last_time = millis();
+  // OLED::display_text(String(millis() - last_time));
+  // last_time = millis();
+
   // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
   // OLED::display_text(write);
   // delay(100);

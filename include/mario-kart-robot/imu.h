@@ -86,6 +86,7 @@ class IMU{
             private:
                 bool completed = false;
                 IMU* imu;
+                double last_motor_time = 0;
 
             public:
                 GyroMovement(IMU &parent_imu);
