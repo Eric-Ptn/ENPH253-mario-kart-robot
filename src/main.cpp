@@ -69,8 +69,8 @@ void setup() {
   // ir calibration
   delay(100);
   OLED::display_text("tape calibration: move tape under robot...");
-  tape_follower.tape_calibration();
-  // tape_follower.scaling_offset_calibration();
+  // tape_follower.tape_calibration();
+  tape_follower.scaling_offset_calibration();
 
   // OLED::display_text("done calibration!");
 
@@ -79,7 +79,10 @@ void setup() {
     if (digitalRead(START_BUTTON) == LOW) {
         break;
     }
-    delay(100);
+    OLED::display_text("s0: " + String(tape_follower.processed_ir_reading(0)) + ", " + String(tape_follower.ir_reading_no_threshold(0)) +
+                      " s1: " + String(tape_follower.processed_ir_reading(1)) + ", " + String(tape_follower.ir_reading_no_threshold(1)) +
+                      " s2: " + String(tape_follower.processed_ir_reading(2)) + ", " + String(tape_follower.ir_reading_no_threshold(2)) +
+                      " s3: " + String(tape_follower.processed_ir_reading(3)) + ", " + String(tape_follower.ir_reading_no_threshold(3)));
   }
 
  motors::servo_pwm(SERVO_MOUNTING_ANGLE);
@@ -111,8 +114,16 @@ void setup() {
 
 // TEST TAPE FOLLOWING PID
 
+double last_time = 0;
+
 void loop() {
   tape_follower.follow_tape();
+  OLED::display_text(String(millis() - last_time));
+  last_time = millis();
+  // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
+  // OLED::display_text(write);
+  // delay(100);
+  // tone(PA10, 252, 500);
 }
 
 // SONAR DETECTION

@@ -25,6 +25,10 @@ int TapeFollower::processed_ir_reading(int i) {
   }
 }
 
+int TapeFollower::ir_reading_no_threshold(int i) {
+  return analogRead(IR_PINS[i]) * ir_scaling[i] - ir_offsets[i];
+}
+
 
 void TapeFollower::constant_offset_calibration() {
   int sensor_sums[NUM_IR_SENSORS];
@@ -84,44 +88,46 @@ void TapeFollower::quick_calibration() {
 
 void TapeFollower::tape_calibration() {
 
-  double ir_mins[NUM_IR_SENSORS];
-  std::fill(ir_mins, ir_mins + NUM_IR_SENSORS, 1023);
+  double ir_white_sums[NUM_IR_SENSORS];
+  double ir_black_sums[NUM_IR_SENSORS];
+  
+  double ir_whites[NUM_IR_SENSORS];
+  double ir_blacks[NUM_IR_SENSORS];
 
-  double ir_maxs[NUM_IR_SENSORS];
-
-
-  motors::left_motor_PWM(25);
-  motors::right_motor_PWM(25);
-
-  double start_time = millis();
-  while (millis() - start_time < 5000) {
-
-    for (int i = 0; i < NUM_IR_SENSORS; i++) {
-      int ir_reading = analogRead(IR_PINS[i]);
-
-      if (ir_reading > ir_maxs[i]) {
-        ir_maxs[i] = ir_reading;
-      }
-      if (ir_reading < ir_mins[i]) {
-        ir_mins[i] = ir_reading;
-      }
-
+  for(int i = 0; i < IR_CALIBRATION_RUNS; i++) {
+    for(int j = 0; j < NUM_IR_SENSORS; j++) {
+      ir_white_sums[j] += analogRead(IR_PINS[j]);
     }
+  }
 
+  OLED::display_text("move to black...");
+  delay(3000);
+  OLED::display_text(String(ir_white_sums[1]));
+  delay(2000);
+
+  for(int i = 0; i < IR_CALIBRATION_RUNS; i++) {
+    for(int j = 0; j < NUM_IR_SENSORS; j++) {
+      ir_black_sums[j] += analogRead(IR_PINS[j]);
+    }
+  }
+  OLED::display_text(String(ir_black_sums[1]));
+  delay(2000);
+  
+
+  for(int i = 0; i < NUM_IR_SENSORS; i++) {
+    ir_whites[i] = ir_white_sums[i] / IR_CALIBRATION_RUNS;
+    ir_blacks[i] = ir_black_sums[i] / IR_CALIBRATION_RUNS;
   }
 
   for (int i = 0; i < NUM_IR_SENSORS; i++) {
-    ir_scaling[i] = (WHITE_VALUE - BLACK_VALUE) / (ir_maxs[i] - ir_mins[i]); // slope of line
-    ir_offsets[i] = ir_scaling[i] * ir_maxs[i] - WHITE_VALUE; // y-intercept of line, b = y - mx, but negative because i subtract offsets
+    ir_scaling[i] = (WHITE_VALUE - BLACK_VALUE) / (ir_whites[i] - ir_blacks[i]); // slope of line
+    ir_offsets[i] = ir_scaling[i] * ir_whites[i] - WHITE_VALUE; // y-intercept of line, b = y - mx, but negative because i subtract offsets
   }
 
-  motors::left_motor_PWM(0);
-  motors::right_motor_PWM(0);
-
-  OLED::display_text("s0: " + String(ir_scaling[0]) + ", " + String(ir_offsets[0]) + ", " + String(ir_maxs[0]) + ", " + String(ir_mins[0]) +
-  " s1: " + String(ir_scaling[1]) + ", " + String(ir_offsets[1]) + ", " + String(ir_maxs[1]) + ", " + String(ir_mins[1]) +
-  " s2: " + String(ir_scaling[2]) + ", " + String(ir_offsets[2]) + ", " + String(ir_maxs[2]) + ", " + String(ir_mins[2]) +
-  " s3: " + String(ir_scaling[3]) + ", " + String(ir_offsets[3]) + ", " + String(ir_maxs[3]) + ", " + String(ir_mins[3]));
+  OLED::display_text("s0: " + String(ir_scaling[0]) + ", " + String(ir_offsets[0]) + ", " + String(ir_whites[0]) + ", " + String(ir_blacks[0]) +
+  " s1: " + String(ir_scaling[1]) + ", " + String(ir_offsets[1]) + ", " + String(ir_whites[1]) + ", " + String(ir_blacks[1]) +
+  " s2: " + String(ir_scaling[2]) + ", " + String(ir_offsets[2]) + ", " + String(ir_whites[2]) + ", " + String(ir_blacks[2]) +
+  " s3: " + String(ir_scaling[3]) + ", " + String(ir_offsets[3]) + ", " + String(ir_whites[3]) + ", " + String(ir_blacks[3]));
 
 }
 
@@ -139,16 +145,17 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
   double error;
   if (sum_of_weights < ERROR_MEMORY_THRESHOLD) {        // use to have another negative offset - if not all black, calculate error else use old error
     current_position /= sum_of_weights;                 // a decimal from 1 to NUM_IR_SENSORS representing the current position of the tape relative to robot
-    error = desired_center - current_position;          // (ranges from 0 to desired_center - 1)
+    error = desired_center - current_position;          // (ranges from 0 to desired_center - 1, positive or negative)
     // OLED::display_text("Normal error: "+ String(error));
   } else {
     // if you don't see anything, assume the error was similar to before, and turn HARD in that direction
     // unfortunately this is quite a banana prone implementation, may change later to just previous error
-    if (last_error < 0) {
-      error = -1 * SERVO_MAX_STEER;
-    } else {
-      error = SERVO_MAX_STEER; 
-    }
+    // if (last_error < 0) {
+    //   error = -1 * (desired_center - 1);
+    // } else {
+    //   error = desired_center - 1; 
+    // }
+    error = last_error;
     current_position = -1;
     // OLED::display_text("Remembered error: "+ String(error));
   }
@@ -179,8 +186,9 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
 
   motors::servo_pwm(servo_angle);
 
-  // OLED display, feel free to comment out
-  // String servo_info = "Servo write: " + String(servo_angle) + " correction value: " + String(correction_val) + " position: " + String(current_position);
+  // // OLED display, feel free to comment out
+  // String servo_info = "";
+  // // String servo_info = "Servo write: " + String(servo_angle) + " correction value: " + String(correction_val) + " position: " + String(current_position);
   // for(int i = 0; i < NUM_IR_SENSORS; i++) {
   //   servo_info += ", Sensor " + String(i) + ": " + String(processed_ir_reading(i));
   // }

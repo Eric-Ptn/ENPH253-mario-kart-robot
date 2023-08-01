@@ -29,6 +29,7 @@ class TapeFollower {
 
         // basic functions
         int processed_ir_reading(int sensor_index);
+        int ir_reading_no_threshold(int sensor_index);
 
         // calibration
         void constant_offset_calibration();

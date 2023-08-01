@@ -42,9 +42,9 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define GYRO_MAX_INTEGRAL 0
 
 // tape following PID values
-#define TAPE_FOLLOWING_KP 3
+#define TAPE_FOLLOWING_KP 0.5
 #define TAPE_FOLLOWING_KI 0
-#define TAPE_FOLLOWING_KD 1
+#define TAPE_FOLLOWING_KD 0
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
@@ -54,10 +54,10 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
-#define ERROR_MEMORY_THRESHOLD -200 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
+#define ERROR_MEMORY_THRESHOLD -400 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
 #define WHITE_VALUE 0
 #define BLACK_VALUE -700
-#define WHITE_THRESHOLD -75
+#define WHITE_THRESHOLD -400
 
 // ir and gyro quick calibration - i could use EEPROM but that's too much work
 const double SAVED_IR_SCALING[] = {1.0, 1.0, 1.0, 1.0};
@@ -73,7 +73,7 @@ const int SAVED_VELOCITY_DRIFT = 0;
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 22 // duty cycle for driving straight on smooth terrain
+#define DEFAULT_MOTOR_DUTY_CYCLE 26 // duty cycle for driving straight on smooth terrain
 #define MAX_DUTY_CYCLE_BOOST_OUTER 2  // max duty cycle boost for sharpest turn
 #define MAX_DUTY_CYCLE_BOOST_INNER 0
 
