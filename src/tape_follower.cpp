@@ -16,6 +16,9 @@ TapeFollower::TapeFollower() {
 // give processed ir reading for an IR tape sensor pin, zero-indexed
 int TapeFollower::processed_ir_reading(int i) {
 
+  // int multiple = 50;
+  // int ir_processed = (analogRead(IR_PINS[i]) * ir_scaling[i] - ir_offsets[i]) + multiple/2;
+  // ir_processed -= ir_processed % multiple;
   int ir_processed = analogRead(IR_PINS[i]) * ir_scaling[i] - ir_offsets[i];
 
   if (ir_processed < WHITE_THRESHOLD) {
@@ -58,22 +61,22 @@ void TapeFollower::scaling_offset_calibration() {
   // find max ir reading, scale each sensor to same sensitivity
 
   int sensor_averages[NUM_IR_SENSORS] = {0};
-  double highest_average = sensor_sums[0] / IR_CALIBRATION_RUNS;
+  double lowest_average = sensor_sums[0] / IR_CALIBRATION_RUNS;
   for(int i = 0; i < NUM_IR_SENSORS; i++) {
     sensor_averages[i] = sensor_sums[i] / IR_CALIBRATION_RUNS;
-    if (sensor_averages[i] > highest_average) {
-      highest_average = sensor_averages[i];
+    if (sensor_averages[i] < lowest_average) {
+      lowest_average = sensor_averages[i];
     }
   }
 
   for (int i = 0; i < NUM_IR_SENSORS; i++) {
-    ir_scaling[i] = highest_average / sensor_averages[i];
-    ir_offsets[i] = highest_average;
+    ir_scaling[i] = lowest_average / sensor_averages[i];
+    ir_offsets[i] = lowest_average;
   }
 
   OLED::display_text("s0 scaling: " + String(ir_scaling[0]) + " s0 offset: " + String(ir_offsets[0]) + 
   " s1 scaling: " + String(ir_scaling[1]) + " s1 offset: " + String(ir_offsets[1]) + " s2 scaling: " + String(ir_scaling[2]) + " s2 offset: " + String(ir_offsets[2])
-  + " s3 scaling: " + String(ir_scaling[3]) + " s3 offset: " + String(ir_offsets[3]));
+  + " s3 scaling: " + String(ir_scaling[3]) + " s3 offset: " + String(ir_offsets[3]) + "\n");
 
   // all offsets are the same and positive, scaling is above 1
 
@@ -135,9 +138,9 @@ void TapeFollower::tape_calibration() {
 void TapeFollower::follow_tape(double duty_cycle_offset) {
 
   // return if you're spamming PWM too fast
-  if (millis() - last_motor_time < 1000 / SERVO_FREQUENCY_HZ) {
-    return;
-  }
+  // if (millis() - last_motor_time < 1000 / SERVO_FREQUENCY_HZ) {
+  //   return;
+  // }
 
   // do weighted average to find current center of robot, ASSUMES EQUAL SPACING BETWEEN SENSORS
   double current_position = 0;
@@ -190,6 +193,13 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
       servo_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
   }
 
+  // String text = "s0: " + String(processed_ir_reading(0)) + 
+  //                 " s1: " + String(processed_ir_reading(1)) +
+  //                 " s2: " + String(processed_ir_reading(2)) +
+  //                 " s3: " + String(processed_ir_reading(3)) + " error: " + String(error) + "\n";
+
+  // Serial.print(text);
+
   motors::servo_pwm(servo_angle);
 
   // // OLED display, feel free to comment out
@@ -204,7 +214,7 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
   motors::left_motor_steering_drive(servo_angle, false);
   motors::right_motor_steering_drive(servo_angle, false);
 
-  last_motor_time = millis();
+  // last_motor_time = millis();
 
 }
 

@@ -25,18 +25,26 @@ void reset_gyro_move_arrays() {
 }
 
 void setup() {
+  // Serial.begin(115200);
+  // Serial.print("started");
   // CHANGE WIRE OBJECT TO WORK ON SECOND I2C
   Wire.begin(uint32_t(PB11), uint32_t(PB10));
+  // Serial.print("i2c begin \n");
+
   // Wire.setWireTimeout(3000 /* us */, true /* reset_on_timeout */); // unfortunately i don't think stm32 Wire has this function
   
   // i2c adafruit components
   OLED::begin_oled();
   mpu6050.begin_imu();
+  // Serial.print("i2c begin components \n");
+
 
   OLED::display_text("setting up...");
 
   // initialize gyro movement objects
   reset_gyro_move_arrays();
+  // Serial.print("initialize gyro arrays \n");
+
 
   // pins
   pinMode(SERVO_PIN, OUTPUT);
@@ -51,8 +59,10 @@ void setup() {
 
   pinMode(BRIDGE_SONAR_TRIGGER, OUTPUT);
   pinMode(BRIDGE_SONAR_ECHO, INPUT);
-  pinMode(WALL_SONAR_TRIGGER, OUTPUT);
+  // pinMode(WALL_SONAR_TRIGGER, OUTPUT);
   pinMode(WALL_SONAR_ECHO, INPUT);
+  // Serial.print("set pin modes \n");
+
 
   pinMode(START_BUTTON, INPUT_PULLUP);
 
@@ -71,6 +81,8 @@ void setup() {
   OLED::display_text("calibrating...");
   // tape_follower.tape_calibration();
   tape_follower.scaling_offset_calibration();
+  // Serial.print("calibrated \n");
+
 
   // OLED::display_text("done calibration!");
 
@@ -79,6 +91,7 @@ void setup() {
     if (digitalRead(START_BUTTON) == LOW) {
         break;
     }
+    
     OLED::display_text("s0: " + String(tape_follower.processed_ir_reading(0)) + ", " + String(tape_follower.ir_reading_no_threshold(0)) +
                       " s1: " + String(tape_follower.processed_ir_reading(1)) + ", " + String(tape_follower.ir_reading_no_threshold(1)) +
                       " s2: " + String(tape_follower.processed_ir_reading(2)) + ", " + String(tape_follower.ir_reading_no_threshold(2)) +
@@ -86,6 +99,8 @@ void setup() {
   }
 
  motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+//  Serial.print("moved servo \n");
+
 
 }
 
@@ -122,6 +137,7 @@ void loop() {
   // last_time = millis();
 
   // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
+  // String write = "s0: " + String(analogRead(IR_PINS[0])) + " s1: " + String(analogRead(IR_PINS[1])) +"s2: " + String(analogRead(IR_PINS[2])) + "s3: " + String(analogRead(IR_PINS[3]));
   // OLED::display_text(write);
   // delay(100);
   // tone(PA10, 252, 500);
