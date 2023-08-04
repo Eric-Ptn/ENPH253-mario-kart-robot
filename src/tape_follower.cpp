@@ -74,9 +74,9 @@ void TapeFollower::scaling_offset_calibration() {
     ir_offsets[i] = lowest_average;
   }
 
-  OLED::display_text("s0 scaling: " + String(ir_scaling[0]) + " s0 offset: " + String(ir_offsets[0]) + 
-  " s1 scaling: " + String(ir_scaling[1]) + " s1 offset: " + String(ir_offsets[1]) + " s2 scaling: " + String(ir_scaling[2]) + " s2 offset: " + String(ir_offsets[2])
-  + " s3 scaling: " + String(ir_scaling[3]) + " s3 offset: " + String(ir_offsets[3]) + "\n");
+  // OLED::display_text("s0 scaling: " + String(ir_scaling[0]) + " s0 offset: " + String(ir_offsets[0]) + 
+  // " s1 scaling: " + String(ir_scaling[1]) + " s1 offset: " + String(ir_offsets[1]) + " s2 scaling: " + String(ir_scaling[2]) + " s2 offset: " + String(ir_offsets[2])
+  // + " s3 scaling: " + String(ir_scaling[3]) + " s3 offset: " + String(ir_offsets[3]) + "\n");
 
   // all offsets are the same and positive, scaling is above 1
 

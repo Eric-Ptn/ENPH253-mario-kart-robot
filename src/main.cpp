@@ -41,7 +41,7 @@ void setup() {
 
   OLED::display_text("setting up...");
 
-  // initialize gyro movement objects
+  // // initialize gyro movement objects
   reset_gyro_move_arrays();
   // Serial.print("initialize gyro arrays \n");
 
@@ -59,26 +59,25 @@ void setup() {
 
   pinMode(BRIDGE_SONAR_TRIGGER, OUTPUT);
   pinMode(BRIDGE_SONAR_ECHO, INPUT);
-  // pinMode(WALL_SONAR_TRIGGER, OUTPUT);
+  pinMode(WALL_SONAR_TRIGGER, OUTPUT);
   pinMode(WALL_SONAR_ECHO, INPUT);
   // Serial.print("set pin modes \n");
 
 
   pinMode(START_BUTTON, INPUT_PULLUP);
+  // pinMode(PC13, OUTPUT);
 
   // gyro calibration
-  // delay(1000);
-  // OLED::display_text("gyro fast calibration...");
-  // mpu6050.reading_calibrate();
-  // OLED::display_text("gyro slow calibration...");
-  // mpu6050.drift_calibrate();
-  // mpu6050.velocity_linear_correction();
-
-  // mpu6050.reset_quantities();
+  delay(1000);
+  OLED::display_text("gyro fast calibration...");
+  mpu6050.reading_calibrate();
+  OLED::display_text("gyro slow calibration...");
+  mpu6050.drift_calibrate();
+  mpu6050.velocity_linear_correction();
 
   // ir calibration
   delay(100);
-  OLED::display_text("calibrating...");
+  OLED::display_text("tape calibration...");
   // tape_follower.tape_calibration();
   tape_follower.scaling_offset_calibration();
   // Serial.print("calibrated \n");
@@ -98,22 +97,55 @@ void setup() {
                       " s3: " + String(tape_follower.processed_ir_reading(3)) + ", " + String(tape_follower.ir_reading_no_threshold(3)));
   }
 
+ 
  motors::servo_pwm(SERVO_MOUNTING_ANGLE);
-//  Serial.print("moved servo \n");
+ mpu6050.reset_quantities();
 
+//  Serial.print("moved servo \n");
 
 }
 
+// bool left = true;
+// double servo_angle = SERVO_MOUNTING_ANGLE;
+
+// // TEST NOISE ISSUES - SERVO SWEEP
+// void loop () {
+//   mpu6050.calculate_quantities();
+//   // OLED::display_text(String(millis()));
+//   motors::left_motor_PWM(30);
+//   motors::right_motor_PWM(30);
+//   if (digitalRead(PC13) == HIGH) {
+//     digitalWrite(PC13, LOW);
+//   } else {
+//     digitalWrite(PC13, HIGH);
+//   }
+//   // motors::right_motor_PWM(30);
+//   // if (left) {
+//   //   servo_angle += 0.01;
+//   //   if (servo_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
+//   //     left = false;
+//   //   }
+//   // } else {
+//   //   servo_angle -= 0.01;
+//   //   if (servo_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
+//   //     left = true;
+//   //   }
+//   // }
+//   // motors::servo_pwm(servo_angle);
+//   delay(500);
+// }
+
 // TEST GYRO STRAIGHT PID
 
-// IMU::GyroMovement straight1(mpu6050);
-// // auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
-// auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
+IMU::GyroMovement straight1(mpu6050);
+// auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
+auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
 
-// void loop() {
-//   mpu6050.calculate_z_angle();
-//   straight1.gyro_drive_straight_angle(0, sonar_ptr);
-// }
+void loop() {
+  // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+  mpu6050.calculate_quantities();
+  straight1.gyro_drive_straight_angle(0, sonar_ptr);
+}
 
 // TEST GYRO TURN
 
@@ -131,17 +163,17 @@ void setup() {
 
 // double last_time = 0;
 
-void loop() {
-  tape_follower.follow_tape();
-  // OLED::display_text(String(millis() - last_time));
-  // last_time = millis();
+// void loop() {
+//   tape_follower.follow_tape();
+//   // OLED::display_text(String(millis() - last_time));
+//   // last_time = millis();
 
-  // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
-  // String write = "s0: " + String(analogRead(IR_PINS[0])) + " s1: " + String(analogRead(IR_PINS[1])) +"s2: " + String(analogRead(IR_PINS[2])) + "s3: " + String(analogRead(IR_PINS[3]));
-  // OLED::display_text(write);
-  // delay(100);
-  // tone(PA10, 252, 500);
-}
+//   // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
+//   // String write = "s0: " + String(analogRead(IR_PINS[0])) + " s1: " + String(analogRead(IR_PINS[1])) +"s2: " + String(analogRead(IR_PINS[2])) + "s3: " + String(analogRead(IR_PINS[3]));
+//   // OLED::display_text(write);
+//   // delay(100);
+//   // tone(PA10, 252, 500);
+// }
 
 // SONAR DETECTION
 

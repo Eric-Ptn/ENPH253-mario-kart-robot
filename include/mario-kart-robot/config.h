@@ -7,11 +7,15 @@
 
 #define LEFT_MOTOR_PIN PB6
 #define LEFT_MOTOR_PIN_PWM_NAME PB_6
-#define LEFT_REVERSE_MOTOR_PIN PB7
-#define LEFT_REVERSE_MOTOR_PIN_PWM_NAME PB_7
+// #define LEFT_REVERSE_MOTOR_PIN PB7
+// #define LEFT_REVERSE_MOTOR_PIN_PWM_NAME PB_7
+#define LEFT_REVERSE_MOTOR_PIN PB8
+#define LEFT_REVERSE_MOTOR_PIN_PWM_NAME PB_8
 
-#define RIGHT_MOTOR_PIN PB8
-#define RIGHT_MOTOR_PIN_PWM_NAME PB_8
+// #define RIGHT_MOTOR_PIN PB8
+// #define RIGHT_MOTOR_PIN_PWM_NAME PB_8
+#define RIGHT_MOTOR_PIN PB7
+#define RIGHT_MOTOR_PIN_PWM_NAME PB_7
 #define RIGHT_REVERSE_MOTOR_PIN PB9
 #define RIGHT_REVERSE_MOTOR_PIN_PWM_NAME PB_9
 
@@ -36,15 +40,15 @@ const byte IR_PINS[] = {PA1, PA0, PA4, PA3};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // gyro PID values
-#define GYRO_KP 1.1
-#define GYRO_KI 0
-#define GYRO_KD 0.7
-#define GYRO_MAX_INTEGRAL 0
+#define GYRO_KP 0.3
+#define GYRO_KI 0.2
+#define GYRO_KD 1.1
+#define GYRO_MAX_INTEGRAL 1
 
 // tape following PID values
 #define TAPE_FOLLOWING_KP 0.45
 #define TAPE_FOLLOWING_KI 0
-#define TAPE_FOLLOWING_KD 0.1
+#define TAPE_FOLLOWING_KD 0.2
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
@@ -73,7 +77,7 @@ const int SAVED_VELOCITY_DRIFT = 0;
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 26 // duty cycle for driving straight on smooth terrain
+#define DEFAULT_MOTOR_DUTY_CYCLE 30 // duty cycle for driving straight on smooth terrain
 #define MAX_DUTY_CYCLE_BOOST_OUTER 4  // max duty cycle boost for sharpest turn
 #define MAX_DUTY_CYCLE_BOOST_INNER -15
 
@@ -86,7 +90,7 @@ const int SAVED_VELOCITY_DRIFT = 0;
 #define ANGLE_TOLERANCE_RADIANS 0.04
 
 // servo steering
-#define SERVO_MOUNTING_ANGLE 0.95
+#define SERVO_MOUNTING_ANGLE 1.45
 #define SERVO_MAX_STEER 0.4
 
 // sonar

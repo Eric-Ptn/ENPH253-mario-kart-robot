@@ -183,11 +183,6 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::func
 
   if (completed) {return;}
 
-  // return if you're spamming PWM too fast
-  if (millis() - last_motor_time < 1000 / SERVO_FREQUENCY_HZ) {
-    return;
-  }
-
   double error = (*imu).circular_correction(target_angle - (*imu).angle);
 
   (*imu).proportional = error;
@@ -205,14 +200,20 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::func
 
   double correction_val = (*imu).Kp * (*imu).proportional + (*imu).Kd * (*imu).derivative + (*imu).Ki * (*imu).integral;
 
-  String angle_text = "Angle: " + String((*imu).angle) + " Correction: " + String(correction_val) + " Error: " + String(error);
+  String angle_text = "Angle: " + String((*imu).angle) + " Correction: " + String(correction_val) + " Error: " + String(error) + " Servo: " + String(SERVO_MOUNTING_ANGLE - correction_val);
   OLED::display_text(angle_text);
 
-  motors::servo_pwm(SERVO_MOUNTING_ANGLE - correction_val);
-  motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, duty_cycle_offset);
-  motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + correction_val, false, duty_cycle_offset);
+  double servo_angle = SERVO_MOUNTING_ANGLE - correction_val;
+  motors::servo_pwm(servo_angle);
 
-  last_motor_time = millis();
+  double dumb_angle = SERVO_MOUNTING_ANGLE + correction_val;
+  if (dumb_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
+      dumb_angle = SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER;
+  } else if (dumb_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
+      dumb_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
+  }
+  motors::left_motor_steering_drive(dumb_angle, false, duty_cycle_offset);
+  motors::right_motor_steering_drive(dumb_angle, false, duty_cycle_offset);
 
   if (stop_condition()) {
     completed = true;
