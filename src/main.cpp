@@ -15,6 +15,21 @@ IMU::GyroMovement* straight_moves[num_straights];
 const int num_turns = 6;
 IMU::GyroMovement* turn_moves[num_turns];
 
+double last_blink_time = 0;
+
+void blink_dat() {
+  if (millis() - last_blink_time < 500) {
+    return;
+  }
+  if (digitalRead(PC13)) {
+    digitalWrite(PC13, LOW);
+    last_blink_time = millis();
+  } else {
+    digitalWrite(PC13, HIGH);
+    last_blink_time = millis();
+  }
+}
+
 void reset_gyro_move_arrays() {
   for (int i = 0; i < num_straights; i++) {
     straight_moves[i] = new IMU::GyroMovement(mpu6050);
@@ -67,13 +82,14 @@ void setup() {
   pinMode(START_BUTTON, INPUT_PULLUP);
   // pinMode(PC13, OUTPUT);
 
-  // gyro calibration
+  // // gyro calibration
   delay(1000);
   OLED::display_text("gyro fast calibration...");
   mpu6050.reading_calibrate();
   OLED::display_text("gyro slow calibration...");
   mpu6050.drift_calibrate();
   mpu6050.velocity_linear_correction();
+  mpu6050.reset_quantities();
 
   // ir calibration
   delay(100);
@@ -90,7 +106,7 @@ void setup() {
     if (digitalRead(START_BUTTON) == LOW) {
         break;
     }
-    
+    mpu6050.calculate_quantities();
     OLED::display_text("s0: " + String(tape_follower.processed_ir_reading(0)) + ", " + String(tape_follower.ir_reading_no_threshold(0)) +
                       " s1: " + String(tape_follower.processed_ir_reading(1)) + ", " + String(tape_follower.ir_reading_no_threshold(1)) +
                       " s2: " + String(tape_follower.processed_ir_reading(2)) + ", " + String(tape_follower.ir_reading_no_threshold(2)) +
@@ -99,7 +115,6 @@ void setup() {
 
  
  motors::servo_pwm(SERVO_MOUNTING_ANGLE);
- mpu6050.reset_quantities();
 
 //  Serial.print("moved servo \n");
 
@@ -108,54 +123,55 @@ void setup() {
 // bool left = true;
 // double servo_angle = SERVO_MOUNTING_ANGLE;
 
-// // TEST NOISE ISSUES - SERVO SWEEP
+// TEST NOISE ISSUES - SERVO SWEEP
 // void loop () {
-//   mpu6050.calculate_quantities();
-//   // OLED::display_text(String(millis()));
-//   motors::left_motor_PWM(30);
-//   motors::right_motor_PWM(30);
-//   if (digitalRead(PC13) == HIGH) {
-//     digitalWrite(PC13, LOW);
-//   } else {
-//     digitalWrite(PC13, HIGH);
-//   }
+//   // mpu6050.calculate_quantities();
+//   // // OLED::display_text(String(millis()));
+//   // motors::left_motor_PWM(30);
 //   // motors::right_motor_PWM(30);
-//   // if (left) {
-//   //   servo_angle += 0.01;
-//   //   if (servo_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
-//   //     left = false;
-//   //   }
+//   // if (digitalRead(PC13) == HIGH) {
+//   //   digitalWrite(PC13, LOW);
 //   // } else {
-//   //   servo_angle -= 0.01;
-//   //   if (servo_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
-//   //     left = true;
-//   //   }
+//   //   digitalWrite(PC13, HIGH);
 //   // }
-//   // motors::servo_pwm(servo_angle);
-//   delay(500);
+//   // motors::right_motor_PWM(30);
+//   if (left) {
+//     servo_angle += 0.01;
+//     if (servo_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
+//       left = false;
+//     }
+//   } else {
+//     servo_angle -= 0.01;
+//     if (servo_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
+//       left = true;
+//     }
+//   }
+//   motors::servo_pwm(servo_angle);  delay(5);
 // }
 
 // TEST GYRO STRAIGHT PID
 
-IMU::GyroMovement straight1(mpu6050);
-// auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
-auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
+// IMU::GyroMovement straight1(mpu6050);
+// // auto test_bool_ptr = std::bind(&TapeFollower::test_bool, tape_follower);
+// auto sonar_ptr = std::bind(&sonar::test_bool); // smth like this
 
-void loop() {
-  // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
-  mpu6050.calculate_quantities();
-  straight1.gyro_drive_straight_angle(0, sonar_ptr);
-}
+// void loop() {
+//   // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+//   mpu6050.calculate_quantities();
+//   straight1.gyro_drive_straight_angle(0, sonar_ptr);
+// }
 
 // TEST GYRO TURN
 
 // IMU::GyroMovement turn1(mpu6050);
 
 // void loop() {
-//   mpu6050.calculate_z_angle();  
+//   mpu6050.calculate_quantities();  
 //   turn1.gyro_turn_absolute(M_PI / 2, 0.3);
 //   if (turn1.complete()) {
 //     OLED::display_text("turn done!!");
+//     motors::left_motor_PWM(0);
+//     motors::right_motor_PWM(0);
 //   }
 // }
 
@@ -165,14 +181,14 @@ void loop() {
 
 // void loop() {
 //   tape_follower.follow_tape();
-//   // OLED::display_text(String(millis() - last_time));
-//   // last_time = millis();
+  // OLED::display_text(String(millis() - last_time));
+  // last_time = millis();
 
-//   // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
-//   // String write = "s0: " + String(analogRead(IR_PINS[0])) + " s1: " + String(analogRead(IR_PINS[1])) +"s2: " + String(analogRead(IR_PINS[2])) + "s3: " + String(analogRead(IR_PINS[3]));
-//   // OLED::display_text(write);
-//   // delay(100);
-//   // tone(PA10, 252, 500);
+  // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
+  // String write = "s0: " + String(analogRead(IR_PINS[0])) + " s1: " + String(analogRead(IR_PINS[1])) +"s2: " + String(analogRead(IR_PINS[2])) + "s3: " + String(analogRead(IR_PINS[3]));
+  // OLED::display_text(write);
+  // delay(100);
+  // tone(PA10, 252, 500);
 // }
 
 // SONAR DETECTION
@@ -221,20 +237,24 @@ void loop() {
 
 // FULL STATE MACHINE LOOP
 
-// enum ROBOT_STATES {
-//   START,
-//   GUN_FOR_BRIDGE_FROM_START,
-//   GUN_FOR_WALL_FROM_BRIDGE,
-//   WALL_RIDE,
-//   UP_RAMP,
-//   TURN_AFTER_FALL
-// };
+enum ROBOT_STATES {
+  START,
+  GUN_FOR_BRIDGE_FROM_START,
+  GUN_FOR_WALL_FROM_BRIDGE,
+  WALL_RIDE,
+  UP_RAMP,
+  TURN_AFTER_FALL
+};
 
-// enum ROBOT_STATES current_state = START;
+enum ROBOT_STATES current_state = START;
+auto bridge_ptr = std::bind(&sonar::test_bool);
 
+void loop() {
+  blink_dat();
+  tape_follower.follow_tape();
+}
 
 // void loop() {
-
 //   mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP
 
 //   switch (current_state) {
@@ -242,85 +262,90 @@ void loop() {
 //       // tape follow until the first sharp turn (gyro reads 0), then switch to gun bridge
 //       // alternatively may hardcode first turn
 //       tape_follower.follow_tape();
-//       if (mpu6050.correct_orientation(0)) {
+//       if (mpu6050.correct_orientation(0)) {  
 //         current_state = GUN_FOR_BRIDGE_FROM_START;
 //       }
 //       break;
 
-//     case GUN_FOR_BRIDGE_FROM_START:
-//       sonar::trigger_sonar(BRIDGE_SONAR_TRIGGER);
+//     // case GUN_FOR_BRIDGE_FROM_START:
+//     //   sonar::trigger_sonar(BRIDGE_SONAR_TRIGGER);
 
-//       auto bridge_ptr = std::bind(&sonar::seeing_bridge);
-//       straight_moves[0].gyro_drive_straight_angle(0, bridge_ptr);
+//     //   (*straight_moves[0]).gyro_drive_straight_angle(0, bridge_ptr);
 
-//       if (straight_moves[0].complete()) {
-//         current_state = GUN_FOR_WALL_FROM_BRIDGE;
-//         sonar::stop_sonar(BRIDGE_SONAR_TRIGGER);
-//       }
-//       break;
+//     //   if ((*straight_moves[0]).complete()) {
+//     //     current_state = GUN_FOR_WALL_FROM_BRIDGE;
+//     //     sonar::stop_sonar(BRIDGE_SONAR_TRIGGER);
+//     //   }
+//     //   break;
 
-//     case GUN_FOR_WALL_FROM_BRIDGE:
-//     // this will be different depending on starting location of robot
-//       turn_moves[0].gyro_turn_absolute(-1, 0.8);
+//     default:
+//       OLED::display_text("defaulted");
+//       motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+//       motors::left_motor_PWM(0);
+//       motors::right_motor_PWM(0);
 
-//       if (turn_moves[0].complete()) {
-//         sonar::trigger_sonar(WALL_SONAR_TRIGGER);
+    // case GUN_FOR_WALL_FROM_BRIDGE:
+    // // this will be different depending on starting location of robot
+    //   turn_moves[0].gyro_turn_absolute(-1, 0.8);
 
-//         auto wall_ptr = std::bind(&sonar::seeing_wall);
-//         straight_moves[1].gyro_drive_straight_angle(-1, wall_ptr);
-//       }
+    //   if (turn_moves[0].complete()) {
+    //     sonar::trigger_sonar(WALL_SONAR_TRIGGER);
 
-//       if (straight_moves[1].complete()) {
-//         current_state = WALL_RIDE;
-//         sonar::stop_sonar(WALL_SONAR_TRIGGER);
-//       }
-//       break;
+    //     auto wall_ptr = std::bind(&sonar::seeing_wall);
+    //     straight_moves[1].gyro_drive_straight_angle(-1, wall_ptr);
+    //   }
 
-//     case WALL_RIDE:
-//       turn_moves[1].gyro_turn_absolute(0, 0.8);
+    //   if (straight_moves[1].complete()) {
+    //     current_state = WALL_RIDE;
+    //     sonar::stop_sonar(WALL_SONAR_TRIGGER);
+    //   }
+    //   break;
 
-//       if (turn_moves[1].complete()) {
-//         auto black_tape_ptr = std::bind(&TapeFollower::seeing_black, tape_follower);
-//         straight_moves[1].gyro_drive_straight_angle(0, black_tape_ptr);
-//       }
+    // case WALL_RIDE:
+    //   turn_moves[1].gyro_turn_absolute(0, 0.8);
 
-//       if (straight_moves[1].complete()) {
-//         current_state = UP_RAMP;
-//       }
-//       break;
+    //   if (turn_moves[1].complete()) {
+    //     auto black_tape_ptr = std::bind(&TapeFollower::seeing_black, tape_follower);
+    //     straight_moves[1].gyro_drive_straight_angle(0, black_tape_ptr);
+    //   }
+
+    //   if (straight_moves[1].complete()) {
+    //     current_state = UP_RAMP;
+    //   }
+    //   break;
     
-//     case UP_RAMP:
-//       // alternatively, tape follow up the ramp and go straight at signal, then may hardcode only 90 deg turn
+    // case UP_RAMP:
+    //   // alternatively, tape follow up the ramp and go straight at signal, then may hardcode only 90 deg turn
 
-//       turn_moves[2].gyro_turn_absolute(M_PI / 2, 0.8);
-//       if (turn_moves[2].complete()) {
-//         turn_moves[3].gyro_turn_absolute(M_PI, 0.8);
-//       }
-//       if (turn_moves[3].complete()) {
-//         auto falling_ptr = std::bind(&IMU::robot_falling, mpu6050);
-//         straight_moves[2].gyro_drive_straight_angle(M_PI, falling_ptr, 5);
-//       }
-//       if (straight_moves[2].complete()) {
-//         current_state = TURN_AFTER_FALL;
-//       }
-//       break;
+    //   turn_moves[2].gyro_turn_absolute(M_PI / 2, 0.8);
+    //   if (turn_moves[2].complete()) {
+    //     turn_moves[3].gyro_turn_absolute(M_PI, 0.8);
+    //   }
+    //   if (turn_moves[3].complete()) {
+    //     auto falling_ptr = std::bind(&IMU::robot_falling, mpu6050);
+    //     straight_moves[2].gyro_drive_straight_angle(M_PI, falling_ptr, 5);
+    //   }
+    //   if (straight_moves[2].complete()) {
+    //     current_state = TURN_AFTER_FALL;
+    //   }
+    //   break;
 
-//     case TURN_AFTER_FALL:
-//       turn_moves[4].gyro_turn_absolute(-1 * M_PI / 2, 0.4, 5);
+    // case TURN_AFTER_FALL:
+    //   turn_moves[4].gyro_turn_absolute(-1 * M_PI / 2, 0.4, 5);
 
-//       if (tape_follower.seeing_white() && turn_moves[4].complete()) {
-//         turn_moves[5].gyro_turn_absolute(0, 0.4);
-//       } else if (turn_moves[4].complete()) {
-//         // keep moving forward if you're done the 90 deg turn but haven't seen white yet
-//         auto white_bg_ptr = std::bind(&TapeFollower::seeing_white, tape_follower);
-//         straight_moves[3].gyro_drive_straight_angle(-1 * M_PI / 2, white_bg_ptr, 5);
-//       }
+    //   if (tape_follower.seeing_white() && turn_moves[4].complete()) {
+    //     turn_moves[5].gyro_turn_absolute(0, 0.4);
+    //   } else if (turn_moves[4].complete()) {
+    //     // keep moving forward if you're done the 90 deg turn but haven't seen white yet
+    //     auto white_bg_ptr = std::bind(&TapeFollower::seeing_white, tape_follower);
+    //     straight_moves[3].gyro_drive_straight_angle(-1 * M_PI / 2, white_bg_ptr, 5);
+    //   }
 
-//       if (turn_moves[5].complete()) {
-//         current_state = GUN_FOR_BRIDGE_FROM_START;
-//         reset_gyro_move_arrays();
-//       }
-//       break;
+    //   if (turn_moves[5].complete()) {
+    //     current_state = GUN_FOR_BRIDGE_FROM_START;
+    //     reset_gyro_move_arrays();
+    //   }
+    //   break;
 
-//   }
+//  }
 // }

@@ -40,15 +40,15 @@ const byte IR_PINS[] = {PA1, PA0, PA4, PA3};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // gyro PID values
-#define GYRO_KP 0.3
-#define GYRO_KI 0.2
-#define GYRO_KD 1.1
+#define GYRO_KP 1
+#define GYRO_KI 0
+#define GYRO_KD 0
 #define GYRO_MAX_INTEGRAL 1
 
 // tape following PID values
-#define TAPE_FOLLOWING_KP 0.45
+#define TAPE_FOLLOWING_KP 0.2
 #define TAPE_FOLLOWING_KI 0
-#define TAPE_FOLLOWING_KD 0.2
+#define TAPE_FOLLOWING_KD 0
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
@@ -77,9 +77,9 @@ const int SAVED_VELOCITY_DRIFT = 0;
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 30 // duty cycle for driving straight on smooth terrain
+#define DEFAULT_MOTOR_DUTY_CYCLE 35 // duty cycle for driving straight on smooth terrain
 #define MAX_DUTY_CYCLE_BOOST_OUTER 4  // max duty cycle boost for sharpest turn
-#define MAX_DUTY_CYCLE_BOOST_INNER -15
+#define MAX_DUTY_CYCLE_BOOST_INNER -25
 
 #define REDUCTION_DUTY_CYCLE_ANGLE 0.85 // not necessarily min... but close enough DON"T MAKE THIS SERVO_MOUNTING_ANGLE OR THE MAX STEER EITHER
 #define DUTY_CYCLE_REDUCTION_OUTER 3
@@ -90,8 +90,8 @@ const int SAVED_VELOCITY_DRIFT = 0;
 #define ANGLE_TOLERANCE_RADIANS 0.04
 
 // servo steering
-#define SERVO_MOUNTING_ANGLE 1.45
-#define SERVO_MAX_STEER 0.4
+#define SERVO_MOUNTING_ANGLE 1.55
+#define SERVO_MAX_STEER 0.35
 
 // sonar
 #define SONAR_FREQUENCY 17 // 1/60ms = 17Hz

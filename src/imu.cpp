@@ -55,7 +55,7 @@ void IMU::calculate_quantities() {
   // String imu_text = "Angle: " + String(angle) + ", Speed: " + String(velocity);
   // OLED::display_text(imu_text);
 
-}
+} 
 
 void IMU::reading_calibrate() {
   double coord_sums[3] = {0};

@@ -211,8 +211,15 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
 
   // OLED::display_text(servo_info);
 
-  motors::left_motor_steering_drive(servo_angle, false);
-  motors::right_motor_steering_drive(servo_angle, false);
+  double dumb_angle = SERVO_MOUNTING_ANGLE - correction_val;
+  if (dumb_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
+      dumb_angle = SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER;
+  } else if (dumb_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
+      dumb_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
+  }
+
+  motors::left_motor_steering_drive(dumb_angle, false);
+  motors::right_motor_steering_drive(dumb_angle, false);
 
   // last_motor_time = millis();
 
