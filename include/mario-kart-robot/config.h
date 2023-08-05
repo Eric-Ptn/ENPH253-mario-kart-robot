@@ -73,7 +73,7 @@ const int SAVED_X_ACCEL_DRIFT = 0;
 const int SAVED_VELOCITY_DRIFT = 0;
 
 // PWM frequencies (https://components101.com/motors/mg996r-servo-motor-datasheet)
-#define SERVO_FREQUENCY_HZ 50 // THIS SHOULD NOT CHANGE
+#define SERVO_FREQUENCY_HZ 300 // THIS SHOULD NOT CHANGE
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds

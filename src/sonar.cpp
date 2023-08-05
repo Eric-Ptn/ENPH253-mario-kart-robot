@@ -48,6 +48,20 @@ namespace sonar {
         return measure_distance(BRIDGE_SONAR_ECHO) < BRIDGE_DISTANCE;
     }
 
+    bool seeing_bridge_falling_edge(){
+        static bool last_seen = false;
+
+        if (seeing_bridge() && !last_seen) {
+            last_seen = true;
+            return false;
+        }
+        if (!seeing_bridge() && last_seen) {
+            last_seen = false;
+            return true;
+        }
+        return false;
+    }
+
     bool seeing_wall(){
         return measure_distance(WALL_SONAR_ECHO) < WALL_DISTANCE;
     }

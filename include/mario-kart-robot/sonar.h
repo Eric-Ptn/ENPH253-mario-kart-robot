@@ -26,6 +26,7 @@ namespace sonar {
 
     // SENSOR EVENTS ***************************************
     bool seeing_bridge();
+    bool seeing_bridge_falling_edge();
     bool seeing_wall();
     bool test_bool();
 }
