@@ -80,7 +80,7 @@ void setup() {
 
 
   pinMode(START_BUTTON, INPUT_PULLUP);
-  // pinMode(PC13, OUTPUT);
+  pinMode(PC13, OUTPUT);
 
   // // gyro calibration
   delay(1000);
@@ -176,19 +176,13 @@ void setup() {
 // }
 
 // TEST TAPE FOLLOWING PID
-
-// double last_time = 0;
+// servo write:1.55, correction val:0, position -1
 
 // void loop() {
+//   // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 //   tape_follower.follow_tape();
-  // OLED::display_text(String(millis() - last_time));
-  // last_time = millis();
-
-  // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
-  // String write = "s0: " + String(analogRead(IR_PINS[0])) + " s1: " + String(analogRead(IR_PINS[1])) +"s2: " + String(analogRead(IR_PINS[2])) + "s3: " + String(analogRead(IR_PINS[3]));
-  // OLED::display_text(write);
-  // delay(100);
-  // tone(PA10, 252, 500);
+  
+//   blink_dat();
 // }
 
 // SONAR DETECTION
@@ -238,7 +232,8 @@ void setup() {
 // FULL STATE MACHINE LOOP
 
 enum ROBOT_STATES {
-  START,
+  RIGHT_START,
+  LEFT_START,
   GUN_FOR_BRIDGE_FROM_START,
   GUN_FOR_WALL_FROM_BRIDGE,
   WALL_RIDE,
@@ -246,7 +241,7 @@ enum ROBOT_STATES {
   TURN_AFTER_FALL
 };
 
-enum ROBOT_STATES current_state = START;
+enum ROBOT_STATES current_state = LEFT_START;
 
 // binding pointers to functions
 auto test_ptr = std::bind(&sonar::test_bool);
@@ -261,19 +256,32 @@ void loop() {
   mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP
 
   switch (current_state) {
-    case START:
-      // tape follow until the first sharp turn (gyro reads 0), then switch to gun bridge
-      // alternatively may hardcode first turn
-      tape_follower.follow_tape();
-      if (mpu6050.correct_orientation(0)) {  
-        current_state = GUN_FOR_BRIDGE_FROM_START;
+    // case START:
+    //   // tape follow until the first sharp turn (gyro reads 0), then switch to gun bridge
+    //   // alternatively may hardcode first turn
+    //   tape_follower.follow_tape();
+    //   if (mpu6050.correct_orientation(0)) {  
+    //     current_state = GUN_FOR_BRIDGE_FROM_START;
+    //   }
+    //   break;
+    case RIGHT_START:
+      (*turn_moves[0]).gyro_turn_absolute(0.35, SERVO_MAX_STEER / 2, 5);
+      if ((*turn_moves[0]).complete()) {
+        (*straight_moves[0]).gyro_drive_straight_angle(0.35, test_ptr);
+      }
+      break;
+
+    case LEFT_START:
+      (*turn_moves[0]).gyro_turn_absolute(-0.15, SERVO_MAX_STEER / 2, 5); // interestingly this works, can turn to slightly off angle and then straight PID back to 0
+      if ((*turn_moves[0]).complete()) {
+        (*straight_moves[0]).gyro_drive_straight_angle(0, test_ptr);
       }
       break;
 
     case GUN_FOR_BRIDGE_FROM_START:
       sonar::trigger_sonar(BRIDGE_SONAR_TRIGGER);
 
-      (*straight_moves[0]).gyro_drive_straight_angle(0, bridge_ptr);
+      (*straight_moves[0]).gyro_drive_straight_angle(0, test_ptr);
 
       if ((*straight_moves[0]).complete()) {
         current_state = GUN_FOR_WALL_FROM_BRIDGE;

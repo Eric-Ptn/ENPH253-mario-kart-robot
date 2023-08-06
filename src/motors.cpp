@@ -40,7 +40,7 @@ namespace motors {
 
 
   void left_motor_steering_drive(double steering_angle, bool reverse, double constant_offset) {
-    double adjusted_value = steering_duty_cycle(steering_angle, steering_angle > SERVO_MOUNTING_ANGLE, constant_offset);
+    double adjusted_value = steering_duty_cycle(steering_angle, steering_angle < SERVO_MOUNTING_ANGLE, constant_offset);
     if (reverse) {
       left_motor_PWM(-1 * adjusted_value);
     } else {
@@ -62,7 +62,7 @@ namespace motors {
 
 
   void right_motor_steering_drive(double steering_angle, bool reverse, double constant_offset) {
-    double adjusted_value = steering_duty_cycle(steering_angle, steering_angle < SERVO_MOUNTING_ANGLE, constant_offset);
+    double adjusted_value = steering_duty_cycle(steering_angle, steering_angle > SERVO_MOUNTING_ANGLE, constant_offset);
     if (reverse) {
       right_motor_PWM(-1 * adjusted_value);
     } else {

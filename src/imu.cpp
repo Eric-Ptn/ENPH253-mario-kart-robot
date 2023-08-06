@@ -144,10 +144,10 @@ void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_s
 
     if (completed) {return;}
 
-    // return if you're spamming PWM too fast
-    if (millis() - last_motor_time < 1000 / SERVO_FREQUENCY_HZ) {
-      return;
-    }
+    // // return if you're spamming PWM too fast
+    // if (millis() - last_motor_time < 1000 / SERVO_FREQUENCY_HZ) {
+    //   return;
+    // }
 
     double angle_difference = (*imu).circular_correction(absolute_angle - (*imu).angle);
 
@@ -155,14 +155,14 @@ void IMU::GyroMovement::gyro_turn_absolute(double absolute_angle, double servo_s
       servo_steering_angle *= -1;
     }
 
-    String angle_text = "Angle: " + String((*imu).angle) + " Difference: " + String(angle_difference);
-    OLED::display_text(angle_text);
+    // String angle_text = "Angle: " + String((*imu).angle) + " Difference: " + String(angle_difference) + " Servo write: " + String(SERVO_MOUNTING_ANGLE + servo_steering_angle);
+    // OLED::display_text(angle_text);
 
     motors::servo_pwm(SERVO_MOUNTING_ANGLE + servo_steering_angle);
     motors::left_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false, duty_cycle_offset);
     motors::right_motor_steering_drive(SERVO_MOUNTING_ANGLE + servo_steering_angle, false, duty_cycle_offset);
 
-    last_motor_time = millis();
+    // last_motor_time = millis();
 
     if (abs(angle_difference) < ANGLE_TOLERANCE_RADIANS) {
       completed = true;
@@ -200,8 +200,8 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::func
 
   double correction_val = (*imu).Kp * (*imu).proportional + (*imu).Kd * (*imu).derivative + (*imu).Ki * (*imu).integral;
 
-  String angle_text = "Angle: " + String((*imu).angle) + " Correction: " + String(correction_val) + " Error: " + String(error) + " Servo: " + String(SERVO_MOUNTING_ANGLE - correction_val);
-  OLED::display_text(angle_text);
+  // String angle_text = "Angle: " + String((*imu).angle) + " Correction: " + String(correction_val) + " Error: " + String(error) + " Servo: " + String(SERVO_MOUNTING_ANGLE - correction_val);
+  // OLED::display_text(angle_text);
 
   double servo_angle = SERVO_MOUNTING_ANGLE - correction_val;
   motors::servo_pwm(servo_angle);
