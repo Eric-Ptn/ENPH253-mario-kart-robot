@@ -202,14 +202,13 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
 
   motors::servo_pwm(servo_angle);
 
-  // // OLED display, feel free to comment out
-  // String servo_info = "";
-  // // String servo_info = "Servo write: " + String(servo_angle) + " correction value: " + String(correction_val) + " position: " + String(current_position);
+  // OLED display, feel free to comment out
+  String servo_info = "Servo write: " + String(servo_angle) + " correction value: " + String(correction_val) + " position: " + String(current_position);
   // for(int i = 0; i < NUM_IR_SENSORS; i++) {
   //   servo_info += ", Sensor " + String(i) + ": " + String(processed_ir_reading(i));
   // }
 
-  // OLED::display_text(servo_info);
+  OLED::display_text(servo_info);
 
   double dumb_angle = SERVO_MOUNTING_ANGLE - correction_val;
   if (dumb_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {

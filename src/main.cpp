@@ -81,6 +81,7 @@ void setup() {
 
   pinMode(START_BUTTON, INPUT_PULLUP);
   pinMode(PC13, OUTPUT);
+  pinMode(PC13, OUTPUT);
 
   // // gyro calibration
   delay(1000);
@@ -176,19 +177,13 @@ void setup() {
 // }
 
 // TEST TAPE FOLLOWING PID
-
-// double last_time = 0;
+// servo write:1.55, correction val:0, position -1
 
 // void loop() {
+//   // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 //   tape_follower.follow_tape();
-  // OLED::display_text(String(millis() - last_time));
-  // last_time = millis();
-
-  // String write = "s0: " + String(tape_follower.processed_ir_reading(0)) + " s1: " + String(tape_follower.processed_ir_reading(1)) +"s2: " + String(tape_follower.processed_ir_reading(2)) + "s3: " + String(tape_follower.processed_ir_reading(3));
-  // String write = "s0: " + String(analogRead(IR_PINS[0])) + " s1: " + String(analogRead(IR_PINS[1])) +"s2: " + String(analogRead(IR_PINS[2])) + "s3: " + String(analogRead(IR_PINS[3]));
-  // OLED::display_text(write);
-  // delay(100);
-  // tone(PA10, 252, 500);
+  
+//   blink_dat();
 // }
 
 // SONAR DETECTION
@@ -238,7 +233,8 @@ void setup() {
 // FULL STATE MACHINE LOOP
 
 enum ROBOT_STATES {
-  START,
+  RIGHT_START,
+  LEFT_START,
   GUN_FOR_BRIDGE_FROM_START,
   GUN_FOR_WALL_FROM_BRIDGE,
   WALL_RIDE,
@@ -246,7 +242,7 @@ enum ROBOT_STATES {
   TURN_AFTER_FALL
 };
 
-enum ROBOT_STATES current_state = START;
+enum ROBOT_STATES current_state = LEFT_START;
 
 // binding pointers to functions
 auto test_ptr = std::bind(&sonar::test_bool);
@@ -257,8 +253,111 @@ auto falling_ptr = std::bind(&IMU::robot_falling, mpu6050);
 auto white_bg_ptr = std::bind(&TapeFollower::seeing_white, tape_follower);
 
 void loop() {
-  mpu6050.calculate_quantities();
-  mpu6050.bumpy_terrain();
+  mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP
+
+  switch (current_state) {
+    // case START:
+    //   // tape follow until the first sharp turn (gyro reads 0), then switch to gun bridge
+    //   // alternatively may hardcode first turn
+    //   tape_follower.follow_tape();
+    //   if (mpu6050.correct_orientation(0)) {  
+    //     current_state = GUN_FOR_BRIDGE_FROM_START;
+    //   }
+    //   break;
+    case RIGHT_START:
+      (*turn_moves[0]).gyro_turn_absolute(0.35, SERVO_MAX_STEER / 2, 5);
+      if ((*turn_moves[0]).complete()) {
+        (*straight_moves[0]).gyro_drive_straight_angle(0.35, test_ptr);
+      }
+      break;
+
+    case LEFT_START:
+      (*turn_moves[0]).gyro_turn_absolute(-0.15, SERVO_MAX_STEER / 2, 5); // interestingly this works, can turn to slightly off angle and then straight PID back to 0
+      if ((*turn_moves[0]).complete()) {
+        (*straight_moves[0]).gyro_drive_straight_angle(0, test_ptr);
+      }
+      break;
+
+    case GUN_FOR_BRIDGE_FROM_START:
+      sonar::trigger_sonar(BRIDGE_SONAR_TRIGGER);
+
+      (*straight_moves[0]).gyro_drive_straight_angle(0, test_ptr);
+
+      if ((*straight_moves[0]).complete()) {
+        current_state = GUN_FOR_WALL_FROM_BRIDGE;
+        sonar::stop_sonar(BRIDGE_SONAR_TRIGGER);
+      }
+      break;
+
+    case GUN_FOR_WALL_FROM_BRIDGE:
+    // this will be different depending on starting location of robot
+      (*turn_moves[0]).gyro_turn_absolute(-1, SERVO_MAX_STEER);
+
+      if ((*turn_moves[0]).complete()) {
+        sonar::trigger_sonar(WALL_SONAR_TRIGGER);
+        (*straight_moves[1]).gyro_drive_straight_angle(-1, wall_ptr);
+      }
+
+      if ((*straight_moves[1]).complete()) {
+        current_state = WALL_RIDE;
+        sonar::stop_sonar(WALL_SONAR_TRIGGER);
+      }
+      break;
+
+    case WALL_RIDE:
+      (*turn_moves[1]).gyro_turn_absolute(0, SERVO_MAX_STEER);
+
+      if ((*turn_moves[1]).complete()) {
+        (*straight_moves[1]).gyro_drive_straight_angle(0, black_tape_ptr);
+      }
+
+      if ((*straight_moves[1]).complete()) {
+        current_state = UP_RAMP;
+      }
+      break;
+    
+    case UP_RAMP:
+      // alternatively, tape follow up the ramp and go straight at signal, then may hardcode only 90 deg turn
+
+      (*turn_moves[2]).gyro_turn_absolute(M_PI / 2, SERVO_MAX_STEER);
+      if ((*turn_moves[2]).complete()) {
+        (*turn_moves[3]).gyro_turn_absolute(M_PI, SERVO_MAX_STEER);
+      }
+      if ((*turn_moves[3]).complete()) {
+        (*straight_moves[2]).gyro_drive_straight_angle(M_PI, falling_ptr, 5);
+      }
+      if ((*straight_moves[2]).complete()) {
+        current_state = TURN_AFTER_FALL;
+      }
+      break;
+
+    case TURN_AFTER_FALL:
+      (*turn_moves[4]).gyro_turn_absolute(-1 * M_PI / 2, SERVO_MAX_STEER / 2, 5);
+
+      if (tape_follower.seeing_white() && (*turn_moves[4]).complete()) {
+
+        (*turn_moves[5]).gyro_turn_absolute(0, SERVO_MAX_STEER);
+
+      } else if ((*turn_moves[4]).complete()) {
+
+        // keep moving forward if you're done the 90 deg turn but haven't seen white yet
+        (*straight_moves[3]).gyro_drive_straight_angle(-1 * M_PI / 2, white_bg_ptr, 5);
+
+      }
+
+      if ((*turn_moves[5]).complete()) {
+        current_state = GUN_FOR_BRIDGE_FROM_START;
+        reset_gyro_move_arrays();
+      }
+      break;
+
+    default:
+      OLED::display_text("defaulted");
+      motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+      motors::left_motor_PWM(0);
+      motors::right_motor_PWM(0);
+
+ }
 }
 
 // void loop() {

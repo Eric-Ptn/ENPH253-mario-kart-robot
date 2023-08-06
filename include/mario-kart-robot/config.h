@@ -58,10 +58,10 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
-#define ERROR_MEMORY_THRESHOLD -500 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
+#define ERROR_MEMORY_THRESHOLD -400 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
 #define WHITE_VALUE 0
 #define BLACK_VALUE -700
-#define WHITE_THRESHOLD -400
+#define WHITE_THRESHOLD -300
 
 // ir and gyro quick calibration - i could use EEPROM but that's too much work
 const double SAVED_IR_SCALING[] = {1.0, 1.0, 1.0, 1.0};
@@ -73,25 +73,25 @@ const int SAVED_X_ACCEL_DRIFT = 0;
 const int SAVED_VELOCITY_DRIFT = 0;
 
 // PWM frequencies (https://components101.com/motors/mg996r-servo-motor-datasheet)
-#define SERVO_FREQUENCY_HZ 300 // THIS SHOULD NOT CHANGE
+#define SERVO_FREQUENCY_HZ 50 // THIS SHOULD NOT CHANGE
 #define MOTOR_FREQUENCY_HZ 100 // this can change within reason - should not start hearing high-pitched whine
 
 // motor speeds
-#define DEFAULT_MOTOR_DUTY_CYCLE 35 // duty cycle for driving straight on smooth terrain
-#define MAX_DUTY_CYCLE_BOOST_OUTER 4  // max duty cycle boost for sharpest turn
-#define MAX_DUTY_CYCLE_BOOST_INNER -25
+#define DEFAULT_MOTOR_DUTY_CYCLE 50 // duty cycle for driving straight on smooth terrain
+#define MAX_DUTY_CYCLE_BOOST_OUTER 5  // max duty cycle boost for sharpest turn
+#define MAX_DUTY_CYCLE_BOOST_INNER -30
 
 #define REDUCTION_DUTY_CYCLE_ANGLE 0.85 // not necessarily min... but close enough DON"T MAKE THIS SERVO_MOUNTING_ANGLE OR THE MAX STEER EITHER
 #define DUTY_CYCLE_REDUCTION_OUTER 3
-#define DUTY_CYCLE_REDUCTION_INNER 15
+#define DUTY_CYCLE_REDUCTION_INNER 20
 
 
 // angle tolerance for ending a gyro turn
-#define ANGLE_TOLERANCE_RADIANS 0.04
+#define ANGLE_TOLERANCE_RADIANS 0.01
 
 // servo steering
-#define SERVO_MOUNTING_ANGLE 1.55
-#define SERVO_MAX_STEER 0.35
+#define SERVO_MOUNTING_ANGLE 2.2
+#define SERVO_MAX_STEER 0.4
 
 // sonar
 #define SONAR_FREQUENCY 17 // 1/60ms = 17Hz
