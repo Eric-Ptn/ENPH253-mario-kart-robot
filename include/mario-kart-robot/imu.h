@@ -1,6 +1,7 @@
 #pragma once
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
+#include <deque>
 #include "config.h"
 
 class IMU{
@@ -11,6 +12,7 @@ class IMU{
         // raw readings
         double gyro_readings[3];
         double accel_readings[3];
+        std::deque<double> z_accel_history;
 
         // calibration values
         double gyro_offsets[3];
@@ -74,6 +76,7 @@ class IMU{
         
         // detects accelerometer spike to judge whether robot is falling or not
         bool robot_falling();
+        bool bumpy_terrain();
         bool correct_orientation(double target_angle);
 
         // HELPERS *************************************************************************************************************************

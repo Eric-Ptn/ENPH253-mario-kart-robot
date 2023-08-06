@@ -52,6 +52,12 @@ void IMU::calculate_quantities() {
 
   last_imu_time = millis();
 
+  z_accel_history.push_back(accel_readings[2]);
+
+  if (z_accel_history.size() > NUM_Z_ACCEL_HISTORY) {
+    z_accel_history.pop_front();
+  }
+
   // String imu_text = "Angle: " + String(angle) + ", Speed: " + String(velocity);
   // OLED::display_text(imu_text);
 
@@ -227,6 +233,28 @@ bool IMU::GyroMovement::complete() {
 
 bool IMU::robot_falling() {
   return accel_readings[2] > FALLING_ACCELERATION;
+}
+
+bool IMU::bumpy_terrain() {
+  double abs_deviation = 0;
+
+  double sum = 0;
+
+  for (double value : z_accel_history) {
+      sum += value;
+  }
+  double mean = sum / z_accel_history.size();
+
+  double total_absolute_deviation = 0;
+  for (double value : z_accel_history) {
+    total_absolute_deviation += abs(value - mean);
+  }
+
+  double mean_absolute_deviation = total_absolute_deviation / z_accel_history.size();
+
+  OLED::display_text(String(mean_absolute_deviation));
+
+  return mean_absolute_deviation > BUMPY_DEVIATION_THRESHOLD;
 }
 
 bool IMU::correct_orientation(double target_angle) {

@@ -98,8 +98,10 @@ const int SAVED_VELOCITY_DRIFT = 0;
 #define BRIDGE_DISTANCE 20
 #define WALL_DISTANCE 20
 
-// accelerometer falling threshold
+// accelerometer values
 #define FALLING_ACCELERATION 3
+#define NUM_Z_ACCEL_HISTORY 20
+#define BUMPY_DEVIATION_THRESHOLD 3.5
 
 // OLED
 const int SCREEN_WIDTH = 128;
