@@ -22,9 +22,10 @@ namespace motors {
     // double microseconds = (2500 - 500)/(M_PI * 3 / 2 - 0.0) * (limited_angle - 0.0) + 500;
     // pwm_start(SERVO_PIN_PWM_NAME, SERVO_FREQUENCY_HZ, microseconds, TimerCompareFormat_t::MICROSEC_COMPARE_FORMAT);
 
-    double duty_cycle_percent = (12.5 - 2.0)/(M_PI - 0.0) * (limited_angle - 0.0) + 2.0;
+    double duty_cycle_percent = (12.5 - 2.5)/(3 * M_PI / 2.0) * (limited_angle - 0.0) + 2.5;
+    int val = duty_cycle_percent / 100 * 65536;
 
-    pwm_start(SERVO_PIN_PWM_NAME, SERVO_FREQUENCY_HZ, duty_cycle_percent / 100 * 65536, TimerCompareFormat_t::RESOLUTION_16B_COMPARE_FORMAT);
+    pwm_start(SERVO_PIN_PWM_NAME, SERVO_FREQUENCY_HZ, val, TimerCompareFormat_t::RESOLUTION_16B_COMPARE_FORMAT);
   }
 
 

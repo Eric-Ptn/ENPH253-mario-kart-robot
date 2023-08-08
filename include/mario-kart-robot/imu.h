@@ -20,6 +20,7 @@ class IMU{
         double gyro_z_drift = 0;
         double accel_x_drift = 0;
         double velocity_drift = 0;
+        double angle_drift = 0;
 
         // gyro calculating angle
         double angle = 0;
@@ -68,6 +69,7 @@ class IMU{
         void drift_calibrate();
         void quick_calibration(); // uses previously saved values in config
         void velocity_linear_correction(); // corrects velocity for drift using linear least squares fit
+        void angle_linear_correction();
 
         void reset_quantities();
 
@@ -75,8 +77,9 @@ class IMU{
         // SENSOR EVENTS *******************************************************************************************************************
         
         // detects accelerometer spike to judge whether robot is falling or not
-        bool robot_falling();
         bool bumpy_terrain();
+        bool rubble_falling_edge();
+        bool rubble_rising_edge();
         bool correct_orientation(double target_angle);
 
         // HELPERS *************************************************************************************************************************

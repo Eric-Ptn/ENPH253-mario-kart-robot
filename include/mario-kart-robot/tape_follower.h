@@ -1,5 +1,6 @@
 #pragma once
 #include "config.h"
+#include "imu.h"
 
 class TapeFollower {
     private:
@@ -44,9 +45,12 @@ class TapeFollower {
         Purpose: PID routine to follow tape. 
         */
         void follow_tape(double duty_cycle_offset = 0);
+        void seek_tape(IMU &imu, bool left, double duty_cycle_offset = 0);
+        bool tape_sweep();
 
         // sensor events
         bool seeing_white();
         bool seeing_black();
-        // bool test_bool();
+        bool seeing_centered_tape();
+        bool time_pointer();
 };

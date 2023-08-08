@@ -4,6 +4,7 @@
 #include <mario-kart-robot\motors.h>
 #include <mario-kart-robot\config.h>
 #include <mario-kart-robot\oled_display.h>
+#include <mario-kart-robot\imu.h>
 
 
 TapeFollower::TapeFollower() {
@@ -21,11 +22,12 @@ int TapeFollower::processed_ir_reading(int i) {
   // ir_processed -= ir_processed % multiple;
   int ir_processed = analogRead(IR_PINS[i]) * ir_scaling[i] - ir_offsets[i];
 
-  if (ir_processed < WHITE_THRESHOLD) {
-    return ir_processed;
-  } else {
-    return 0;
-  }
+  // if (ir_processed < WHITE_THRESHOLD) {
+  //   return ir_processed;
+  // } else {
+  //   return 0;
+  // }
+  return ir_processed;
 }
 
 int TapeFollower::ir_reading_no_threshold(int i) {
@@ -145,11 +147,40 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
   // do weighted average to find current center of robot, ASSUMES EQUAL SPACING BETWEEN SENSORS
   double current_position = 0;
   double sum_of_weights = 0;
+  // double processed_readings[NUM_IR_SENSORS];
+  // double two_max[2];
+  // double two_indices[2];
+
+  // for (int i = 0; i < NUM_IR_SENSORS; i++) {
+  //   processed_readings[i] = processed_ir_reading(i);
+  //   if (processed_readings[i] < two_max[0]) {
+  //     two_max[1] = two_max[0];
+  //     two_indices[1] = two_indices[0];
+
+  //     two_max[0] = processed_readings[i];
+  //     two_indices[0] = i;
+  //   } else if (processed_readings[i] < two_max[1]) {
+  //     two_max[1] = processed_readings[i];
+  //     two_indices[1] = i;
+  //   }
+  // }
+
+  // for (int i = 0; i < 2; i++) {
+  //   current_position += two_max[i] * two_indices[i];
+  //   sum_of_weights += two_max[i];
+  // }
+
+  int arr[4];
+
+
   for(int i = 1; i <= NUM_IR_SENSORS; i++){  // cannot be zero-indexed because it screws up the weighted average
-    double processed_reading = processed_ir_reading(i - 1); // careful here! i is 1-indexed, ir_readings is 0-indexed
-    current_position += processed_reading * i; 
-    sum_of_weights += processed_reading;
+    // careful here! i is 1-indexed, ir_readings is 0-indexed
+    arr[i-1] = processed_ir_reading(i-1);
+    current_position += arr[i-1] * i; 
+    sum_of_weights += arr[i-1];
   }
+
+  // OLED::display_text(String(millis()));
 
   double error;
   if (sum_of_weights < ERROR_MEMORY_THRESHOLD) {        // use to have another negative offset - if not all black, calculate error else use old error
@@ -193,6 +224,7 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
       servo_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
   }
 
+
   // String text = "s0: " + String(processed_ir_reading(0)) + 
   //                 " s1: " + String(processed_ir_reading(1)) +
   //                 " s2: " + String(processed_ir_reading(2)) +
@@ -200,28 +232,88 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
 
   // Serial.print(text);
 
-  motors::servo_pwm(servo_angle);
+  // motors::servo_pwm(servo_angle);
 
   // OLED display, feel free to comment out
-  String servo_info = "Servo write: " + String(servo_angle) + " correction value: " + String(correction_val) + " position: " + String(current_position);
+  // String servo_info = String(millis())+ ", " + String(servo_angle) + ", " + String(error);
+  // String servo_info = String(current_position);
+  String servo_info = String(arr[0])  + ", " + String(arr[1])  + ", " + String(arr[2])  + ", " + String(arr[3]);
   // for(int i = 0; i < NUM_IR_SENSORS; i++) {
   //   servo_info += ", Sensor " + String(i) + ": " + String(processed_ir_reading(i));
   // }
 
+  // OLED::display_text(String(millis()));
   OLED::display_text(servo_info);
+  // OLED::display_text(String(millis()));
 
-  double dumb_angle = SERVO_MOUNTING_ANGLE - correction_val;
-  if (dumb_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
-      dumb_angle = SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER;
-  } else if (dumb_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
-      dumb_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
-  }
+  // double dumb_angle = SERVO_MOUNTING_ANGLE + correction_val;
+  // if (dumb_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
+  //     dumb_angle = SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER;
+  // } else if (dumb_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
+  //     dumb_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
+  // }
 
-  motors::left_motor_steering_drive(dumb_angle, false);
-  motors::right_motor_steering_drive(dumb_angle, false);
+  // motors::left_motor_steering_drive(dumb_angle, false, duty_cycle_offset);
+  // motors::right_motor_steering_drive(dumb_angle, false, duty_cycle_offset);
 
   // last_motor_time = millis();
 
+}
+
+void TapeFollower::seek_tape(IMU &imu, bool left, double duty_cycle_offset) {
+
+  static IMU::GyroMovement half_turn1(imu);
+  static IMU::GyroMovement half_turn2(imu);
+  static bool found_tape = false; // doesn't reset on new lap
+
+  // OLED::display_text(String(found_tape));
+
+  if (!found_tape) {
+    int direction;
+    if (left) {
+      direction = 1;
+    } else {
+      direction = -1;
+    }
+
+    half_turn1.gyro_turn_absolute(M_PI / 2 * direction, 2 * SERVO_MAX_STEER / 3, -25);
+    if (half_turn1.complete()) {
+      half_turn2.gyro_turn_absolute(M_PI * direction, 2 * SERVO_MAX_STEER / 3, -25);
+    }
+
+    if (seeing_centered_tape()) {
+      OLED::display_text("found tape");
+      found_tape = true;
+    }
+  } else {
+    follow_tape(duty_cycle_offset);
+  }
+  
+}
+
+bool TapeFollower::tape_sweep() {
+  static double servo_angle = 0;
+  static double start_time = millis();
+  static bool complete = false;
+
+  if (complete) {
+    return true;
+  }
+
+  motors::servo_pwm(servo_angle);
+  motors::left_motor_PWM(0);
+  motors::right_motor_PWM(0);
+  servo_angle += (SERVO_MAX_STEER - 0) / 1500 * (millis() - start_time);
+
+  if (servo_angle > SERVO_MAX_STEER) {
+    servo_angle = 0;
+  }
+
+  if (seeing_centered_tape()) {
+    complete = true;
+  }
+
+  return false;
 }
 
 
@@ -241,5 +333,55 @@ bool TapeFollower::seeing_white() {
 
 
 bool TapeFollower::seeing_black() {
-  return !seeing_white();
+  double sum_readings = 0;
+  for (int i = 0; i < NUM_IR_SENSORS; i++) {
+    sum_readings += processed_ir_reading(i);
+  }
+
+  // OLED::display_text(String(sum_readings) + " " + String(ir_reading_no_threshold(0)) + " "+ String(ir_reading_no_threshold(1)) + " "+ String(ir_reading_no_threshold(2)) + " "+ String(ir_reading_no_threshold(3)) + " ");
+
+  if (sum_readings < ERROR_MEMORY_THRESHOLD) {
+    return true;
+  }
+
+  return false;
+}
+
+bool TapeFollower::seeing_centered_tape() {
+  static int num_measurements = 3;
+  static int num_true = 0;
+
+  int processed_readings[4];
+
+  for (int i = 0; i < NUM_IR_SENSORS; i++) {
+    processed_readings[i] = processed_ir_reading(i);
+  }
+
+  int num_black = 0;
+
+  for (int i = 0; i < NUM_IR_SENSORS; i++) {
+    if (processed_readings[i] < 0) {
+      num_black++;
+    }
+  }
+
+  bool seeing_black_rn = (num_black == 2) || 
+  (processed_readings[0] == 0 && processed_readings[1] < 0 && processed_readings[2] == 0 && processed_readings[3] == 0) || 
+  (processed_readings[0] == 0 && processed_readings[1] == 0 && processed_readings[2] < 0 && processed_readings[3] == 0);
+
+  if (seeing_black_rn && num_true == num_measurements) {
+    return true;
+  } else if (seeing_black_rn) {
+    num_true++;
+  } else {
+    num_true = 0;
+  }
+
+  return false;
+}
+
+bool TapeFollower::time_pointer() {
+  static double time_start = millis();
+
+  return millis() - time_start > 8000;
 }

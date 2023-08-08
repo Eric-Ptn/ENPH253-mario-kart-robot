@@ -46,30 +46,36 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define GYRO_MAX_INTEGRAL 1
 
 // tape following PID values
-#define TAPE_FOLLOWING_KP 0.2
+#define TAPE_FOLLOWING_KP 0.25
 #define TAPE_FOLLOWING_KI 0
 #define TAPE_FOLLOWING_KD 0
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
 
 // gyro calibration values
 #define IMU_FAST_CALIBRATION_RUNS 1000
-#define IMU_SLOW_CALIBRATION_SECONDS 8
+#define IMU_SLOW_CALIBRATION_SECONDS 20
 #define IMU_VELOCITY_FIT_RUNS 50
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
-#define ERROR_MEMORY_THRESHOLD -400 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
+#define ERROR_MEMORY_THRESHOLD -200 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
 #define WHITE_VALUE 0
 #define BLACK_VALUE -700
-#define WHITE_THRESHOLD -300
+// #define WHITE_THRESHOLD -300
+#define WHITE_THRESHOLD -200
+// #define WHITE_THRESHOLD -125
 
 // ir and gyro quick calibration - i could use EEPROM but that's too much work
 const double SAVED_IR_SCALING[] = {1.0, 1.0, 1.0, 1.0};
 const int SAVED_IR_OFFSETS[] = {0, 0, 0, 0};
-const double SAVED_GYRO_OFFSETS[] = {0, 0, 0};
-const double SAVED_ACCEL_OFFSETS[] = {0, 0, 0};
-const int SAVED_Z_ANGLE_DRIFT = 0;
-const int SAVED_X_ACCEL_DRIFT = 0;
+const double SAVED_GYRO_OFFSETS[] = {0.09, 0.01, 0.02};
+const double SAVED_ACCEL_OFFSETS[] = {0.09, 0.36, 10.37};
+const int SAVED_Z_ANGLE_DRIFT = 0.0002598; // -0.00000004 // -0.00000000131558
+const int SAVED_X_ACCEL_DRIFT = 0.00143652; // 0.00000076 // 0.0000001240419
+
+const int SAVED_ANGLE_DRIFT = -0.00000075724228; // -0.00000040986638 // 0.0000007
+
+// this does not seem to work... - i would rather do the drift calculation on the angle calculation itself
 const int SAVED_VELOCITY_DRIFT = 0;
 
 // PWM frequencies (https://components101.com/motors/mg996r-servo-motor-datasheet)
@@ -90,7 +96,8 @@ const int SAVED_VELOCITY_DRIFT = 0;
 #define ANGLE_TOLERANCE_RADIANS 0.01
 
 // servo steering
-#define SERVO_MOUNTING_ANGLE 2.2
+// #define SERVO_MOUNTING_ANGLE M_PI / 2
+#define SERVO_MOUNTING_ANGLE 2.5
 #define SERVO_MAX_STEER 0.4
 
 // sonar
@@ -101,7 +108,7 @@ const int SAVED_VELOCITY_DRIFT = 0;
 // accelerometer values
 #define FALLING_ACCELERATION 3
 #define NUM_Z_ACCEL_HISTORY 20
-#define BUMPY_DEVIATION_THRESHOLD 3.5
+#define BUMPY_DEVIATION_THRESHOLD 4.5
 
 // OLED
 const int SCREEN_WIDTH = 128;
