@@ -60,6 +60,37 @@ void IMU::calculate_quantities() {
     z_accel_history.pop_front();
   }
 
+  // String imu_text = "Angle: " + String(angle, 5);
+  // OLED::display_text(imu_text);
+
+} 
+
+
+void IMU::calculate_quantities_print() {
+  read_imu();
+
+  double dt = (millis() - last_imu_time) / 1000;
+
+  // angle += gyro_readings[2] * dt - gyro_z_drift * pow(dt, 2.0);
+  angle += gyro_readings[2] * dt - angle_drift * dt;
+
+  if (angle > M_PI) {
+    angle -= 2 * M_PI;
+  }
+  if (angle < -1 * M_PI) {
+    angle += 2 * M_PI;
+  }
+
+  velocity += accel_readings[0] * dt - velocity_drift * dt - accel_x_drift * pow(dt, 2.0);
+
+  last_imu_time = millis();
+
+  z_accel_history.push_back(accel_readings[2]);
+
+  if (z_accel_history.size() > NUM_Z_ACCEL_HISTORY) {
+    z_accel_history.pop_front();
+  }
+
   String imu_text = "Angle: " + String(angle, 5);
   OLED::display_text(imu_text);
 
@@ -300,7 +331,7 @@ bool IMU::GyroMovement::complete() {
   return completed;
 }
 
-bool IMU::bumpy_terrain() {
+bool IMU::bumpy_terrain(double threshold) {
 
   double sum = 0;
   for (double value : z_accel_history) {
@@ -311,17 +342,18 @@ bool IMU::bumpy_terrain() {
 
   // OLED::display_text(String(average) + " " + String(average > BUMPY_DEVIATION_THRESHOLD));
 
-  return average > BUMPY_DEVIATION_THRESHOLD;
+  return average > threshold;
 }
 
 bool IMU::rubble_falling_edge() {
   static bool rubbling = false;
   static bool prev_rubbling = false;
 
-  rubbling = bumpy_terrain();
+  rubbling = bumpy_terrain(7);
 
   if (!rubbling && prev_rubbling) {
     prev_rubbling = rubbling;
+    OLED::display_text("BUMPYYYYY");
     return true;
   }
 
@@ -333,7 +365,7 @@ bool IMU::rubble_rising_edge() {
   static bool rubbling = false;
   static bool prev_rubbling = false;
 
-  rubbling = bumpy_terrain();
+  rubbling = bumpy_terrain(BUMPY_DEVIATION_THRESHOLD);
 
   if (rubbling && !prev_rubbling) {
     prev_rubbling = rubbling;

@@ -52,6 +52,7 @@ class IMU{
         NOTE*: This function MUST be called in every loop iteration of the main program to keep integration up to date.
         */
         void calculate_quantities();
+        void calculate_quantities_print();
 
         // CALIBRATION **********************************************************************************************************************
 
@@ -77,7 +78,7 @@ class IMU{
         // SENSOR EVENTS *******************************************************************************************************************
         
         // detects accelerometer spike to judge whether robot is falling or not
-        bool bumpy_terrain();
+        bool bumpy_terrain(double threshold);
         bool rubble_falling_edge();
         bool rubble_rising_edge();
         bool correct_orientation(double target_angle);

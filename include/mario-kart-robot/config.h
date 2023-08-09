@@ -47,7 +47,7 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define GYRO_MAX_INTEGRAL 1
 
 // tape following PID values
-#define TAPE_FOLLOWING_KP 0.25
+#define TAPE_FOLLOWING_KP 0.6
 #define TAPE_FOLLOWING_KI 0
 #define TAPE_FOLLOWING_KD 0
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
@@ -109,7 +109,7 @@ const int SAVED_VELOCITY_DRIFT = 0;
 // accelerometer values
 #define FALLING_ACCELERATION 3
 #define NUM_Z_ACCEL_HISTORY 20
-#define BUMPY_DEVIATION_THRESHOLD 10
+#define BUMPY_DEVIATION_THRESHOLD 12
 
 // OLED
 const int SCREEN_WIDTH = 128;

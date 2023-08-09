@@ -133,7 +133,7 @@ void setup() {
     if (digitalRead(START_BUTTON) == LOW) {
         break;
     }
-    mpu6050.calculate_quantities();
+    mpu6050.calculate_quantities_print();
     // OLED::display_text("s0: " + String(tape_follower.processed_ir_reading(0)) + ", " + String(tape_follower.ir_reading_no_threshold(0)) +
     //                   " s1: " + String(tape_follower.processed_ir_reading(1)) + ", " + String(tape_follower.ir_reading_no_threshold(1)) +
     //                   " s2: " + String(tape_follower.processed_ir_reading(2)) + ", " + String(tape_follower.ir_reading_no_threshold(2)) +
@@ -304,11 +304,15 @@ void loop() {
       break;
 
     case SEEK_TAPE:
-
+      // there needs to be some delay here...
       (*straight_moves[1]).gyro_drive_straight_angle(0, black_tape_ptr, -15);
       
       if ((*straight_moves[1]).complete()) {
-        if (tape_follower.tape_sweep()) {
+        static double start_time = millis();
+        while (millis() - start_time < 1000) {
+          mpu6050.calculate_quantities();
+        }
+        if (tape_follower.tape_sweep(mpu6050)) {
           OLED::display_text("tape found");
           current_state = TAPE_FOLLOW;
         };
@@ -318,14 +322,14 @@ void loop() {
 
     case TAPE_FOLLOW:
 
-      tape_follower.follow_tape();
-      if (mpu6050.correct_orientation(M_PI)) {
+      tape_follower.follow_tape(-30);
+      if (mpu6050.correct_orientation(-1 * M_PI + 0.04)) {
         current_state = UP_RAMP;
       }
 
     case UP_RAMP:
 
-      (*straight_moves[2]).gyro_drive_straight_angle(M_PI, rubble_rising_ptr, -10);
+      (*straight_moves[2]).gyro_drive_straight_angle(-1 * M_PI + 0.04, rubble_rising_ptr, -10);
 
       if ((*straight_moves[2]).complete()) {
         current_state = NEW_LAP;
@@ -338,15 +342,15 @@ void loop() {
       (*turn_moves[1]).gyro_turn_absolute(-1 * M_PI / 2, SERVO_MAX_STEER);
 
       if ((*turn_moves[1]).complete()) {
-        (*turn_moves[2]).gyro_turn_absolute(0, 2 * SERVO_MAX_STEER / 3);
+        (*turn_moves[2]).gyro_turn_absolute(0, SERVO_MAX_STEER / 2);
       }
 
       if ((*turn_moves[2]).complete()) {
-        (*straight_moves[3]).gyro_drive_straight_angle(0, rubble_falling_ptr);
+        (*straight_moves[3]).gyro_drive_straight_angle(0, rubble_falling_ptr, -15);
       }
 
       if ((*straight_moves[3]).complete()) {
-        current_state = L_STATE;
+        current_state = SEEK_TAPE;
       }
       break;
 

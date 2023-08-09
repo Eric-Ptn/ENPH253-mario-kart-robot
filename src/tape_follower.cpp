@@ -232,29 +232,29 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
 
   // Serial.print(text);
 
-  // motors::servo_pwm(servo_angle);
+  motors::servo_pwm(servo_angle);
 
   // OLED display, feel free to comment out
   // String servo_info = String(millis())+ ", " + String(servo_angle) + ", " + String(error);
   // String servo_info = String(current_position);
-  String servo_info = String(arr[0])  + ", " + String(arr[1])  + ", " + String(arr[2])  + ", " + String(arr[3]);
+  // String servo_info = String(arr[0])  + ", " + String(arr[1])  + ", " + String(arr[2])  + ", " + String(arr[3]);
   // for(int i = 0; i < NUM_IR_SENSORS; i++) {
   //   servo_info += ", Sensor " + String(i) + ": " + String(processed_ir_reading(i));
   // }
 
   // OLED::display_text(String(millis()));
-  OLED::display_text(servo_info);
+  // OLED::display_text(servo_info);
   // OLED::display_text(String(millis()));
 
-  // double dumb_angle = SERVO_MOUNTING_ANGLE + correction_val;
-  // if (dumb_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
-  //     dumb_angle = SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER;
-  // } else if (dumb_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
-  //     dumb_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
-  // }
+  double dumb_angle = SERVO_MOUNTING_ANGLE + correction_val;
+  if (dumb_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
+      dumb_angle = SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER;
+  } else if (dumb_angle < SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER) {
+      dumb_angle = SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER;
+  }
 
-  // motors::left_motor_steering_drive(dumb_angle, false, duty_cycle_offset);
-  // motors::right_motor_steering_drive(dumb_angle, false, duty_cycle_offset);
+  motors::left_motor_steering_drive(dumb_angle, false, duty_cycle_offset);
+  motors::right_motor_steering_drive(dumb_angle, false, duty_cycle_offset);
 
   // last_motor_time = millis();
 
@@ -291,8 +291,7 @@ void TapeFollower::seek_tape(IMU &imu, bool left, double duty_cycle_offset) {
   
 }
 
-bool TapeFollower::tape_sweep() {
-  static double servo_angle = 0;
+bool TapeFollower::tape_sweep(IMU &mpu6050) {
   static double start_time = millis();
   static bool complete = false;
 
@@ -300,16 +299,15 @@ bool TapeFollower::tape_sweep() {
     return true;
   }
 
-  motors::servo_pwm(servo_angle);
+  motors::servo_pwm(SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER);
   motors::left_motor_PWM(0);
   motors::right_motor_PWM(0);
-  servo_angle = (SERVO_MAX_STEER - 0) / 1500 * (millis() - start_time);
 
-  if (servo_angle > SERVO_MAX_STEER) {
-    servo_angle = 0;
+  while (millis() - start_time < 100) {
+    mpu6050.calculate_quantities();
   }
 
-  if (seeing_centered_tape()) {
+  if (seeing_black()) {
     complete = true;
   }
 
@@ -348,7 +346,7 @@ bool TapeFollower::seeing_black() {
 }
 
 bool TapeFollower::seeing_centered_tape() {
-  static int num_measurements = 3;
+  static int num_measurements = 1;
   static int num_true = 0;
 
   int processed_readings[4];

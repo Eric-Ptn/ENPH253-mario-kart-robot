@@ -46,7 +46,7 @@ class TapeFollower {
         */
         void follow_tape(double duty_cycle_offset = 0);
         void seek_tape(IMU &imu, bool left, double duty_cycle_offset = 0);
-        bool tape_sweep();
+        bool tape_sweep(IMU &mpu6050);
 
         // sensor events
         bool seeing_white();
