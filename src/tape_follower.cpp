@@ -303,7 +303,7 @@ bool TapeFollower::tape_sweep() {
   motors::servo_pwm(servo_angle);
   motors::left_motor_PWM(0);
   motors::right_motor_PWM(0);
-  servo_angle += (SERVO_MAX_STEER - 0) / 1500 * (millis() - start_time);
+  servo_angle = (SERVO_MAX_STEER - 0) / 1500 * (millis() - start_time);
 
   if (servo_angle > SERVO_MAX_STEER) {
     servo_angle = 0;

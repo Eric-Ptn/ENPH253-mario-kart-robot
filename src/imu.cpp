@@ -60,8 +60,8 @@ void IMU::calculate_quantities() {
     z_accel_history.pop_front();
   }
 
-  // String imu_text = "Angle: " + String(angle) + ", Speed: " + String(velocity);
-  // OLED::display_text(imu_text);
+  String imu_text = "Angle: " + String(angle, 5);
+  OLED::display_text(imu_text);
 
 } 
 
@@ -142,6 +142,7 @@ void IMU::quick_calibration() {
 }
 
 void IMU::reset_quantities() {
+  // angle = 0.0175;
   angle = 0;
   velocity = 0;
   last_imu_time = millis();
@@ -279,6 +280,7 @@ void IMU::GyroMovement::gyro_drive_straight_angle(double target_angle, std::func
   double servo_angle = SERVO_MOUNTING_ANGLE - correction_val;
   motors::servo_pwm(servo_angle);
 
+//UNCOMMENT THIS LATER
   double dumb_angle = SERVO_MOUNTING_ANGLE - correction_val;
   if (dumb_angle > SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER) {
       dumb_angle = SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER;
@@ -307,7 +309,7 @@ bool IMU::bumpy_terrain() {
 
   double average = sum / z_accel_history.size();
 
-  OLED::display_text(String(average) + " " + String(average > BUMPY_DEVIATION_THRESHOLD));
+  // OLED::display_text(String(average) + " " + String(average > BUMPY_DEVIATION_THRESHOLD));
 
   return average > BUMPY_DEVIATION_THRESHOLD;
 }

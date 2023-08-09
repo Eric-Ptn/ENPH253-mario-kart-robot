@@ -40,7 +40,8 @@ const byte IR_PINS[] = {PA1, PA0, PA4, PA3};
 const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // gyro PID values
-#define GYRO_KP 1
+// 3 is slightly unstable, steady state oscillations
+#define GYRO_KP 1.5
 #define GYRO_KI 0
 #define GYRO_KD 0
 #define GYRO_MAX_INTEGRAL 1
@@ -93,7 +94,7 @@ const int SAVED_VELOCITY_DRIFT = 0;
 
 
 // angle tolerance for ending a gyro turn
-#define ANGLE_TOLERANCE_RADIANS 0.01
+#define ANGLE_TOLERANCE_RADIANS 0.015
 
 // servo steering
 // #define SERVO_MOUNTING_ANGLE M_PI / 2
@@ -108,7 +109,7 @@ const int SAVED_VELOCITY_DRIFT = 0;
 // accelerometer values
 #define FALLING_ACCELERATION 3
 #define NUM_Z_ACCEL_HISTORY 20
-#define BUMPY_DEVIATION_THRESHOLD 4.5
+#define BUMPY_DEVIATION_THRESHOLD 10
 
 // OLED
 const int SCREEN_WIDTH = 128;

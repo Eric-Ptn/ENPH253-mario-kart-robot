@@ -11,7 +11,7 @@ namespace OLED {
   
   void display_text(String text) {
     display_handler.clearDisplay();
-    display_handler.setTextSize(1);
+    display_handler.setTextSize(2);
     display_handler.setTextColor(SSD1306_WHITE);
     display_handler.setCursor(0,0);
     display_handler.println(text);
