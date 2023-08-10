@@ -27,6 +27,11 @@ class TapeFollower {
 
         double last_motor_time = 0; // time of last motor update, do not want to spam motors faster than their accepted pwm frequency
 
+        // others
+        bool sweep_done = false;
+        bool sweep_running = false;
+        double sweep_start_time;
+
     public:
         TapeFollower();
 
@@ -47,6 +52,7 @@ class TapeFollower {
         void follow_tape(double duty_cycle_offset = 0);
         void seek_tape(IMU &imu, bool left, double duty_cycle_offset = 0);
         bool tape_sweep(IMU &mpu6050);
+        void sweep_reset();
 
         // sensor events
         bool seeing_white();

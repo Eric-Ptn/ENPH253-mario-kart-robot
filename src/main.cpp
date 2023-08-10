@@ -9,7 +9,7 @@
 IMU mpu6050;
 TapeFollower tape_follower;
 
-const int num_straights = 4;
+const int num_straights = 5;
 IMU::GyroMovement* straight_moves[num_straights];
 
 const int num_turns = 6;
@@ -58,11 +58,43 @@ bool rubble_falling_pointer() {
   return mpu6050.rubble_falling_edge();
 }
 
-// bool time_pointer() {
-//   static double time_start = millis();
+bool timer_pointer() {
+  static double start_time = millis();
+  static double running = false;
 
-//   return millis() - time_start > 8000;
-// }
+  if (!running) {
+    start_time = millis();
+    running = true;
+  }
+
+  if (running && millis() - start_time < 500) {
+    return false;
+  } else if (running) {
+    running = false;
+    return true;
+  }
+}
+
+bool timer_pointer2() {
+  static double start_time = millis();
+  static double running = false;
+
+  if (!running) {
+    start_time = millis();
+    running = true;
+  }
+
+  if (running && millis() - start_time < 750) {
+    return false;
+  } else if (running) {
+    running = false;
+    return true;
+  }
+}
+
+bool white_pointer() {
+  return tape_follower.seeing_white();
+}
 
 void setup() {
   Serial.begin(115200);
@@ -105,6 +137,9 @@ void setup() {
 
 
   pinMode(START_BUTTON, INPUT_PULLUP);
+  pinMode(PA8, OUTPUT);
+  digitalWrite(PA8, LOW);
+
   pinMode(PC13, OUTPUT);
   // pinMode(PC13, OUTPUT);
 
@@ -133,6 +168,7 @@ void setup() {
     if (digitalRead(START_BUTTON) == LOW) {
         break;
     }
+    // mpu6050.calculate_quantities();
     mpu6050.calculate_quantities_print();
     // OLED::display_text("s0: " + String(tape_follower.processed_ir_reading(0)) + ", " + String(tape_follower.ir_reading_no_threshold(0)) +
     //                   " s1: " + String(tape_follower.processed_ir_reading(1)) + ", " + String(tape_follower.ir_reading_no_threshold(1)) +
@@ -253,6 +289,7 @@ void setup() {
 // FULL STATE MACHINE LOOP
 
 enum ROBOT_STATES {
+  RESETTING,
   RIGHT_START,
   LEFT_START,
   SEEK_TAPE,
@@ -263,11 +300,14 @@ enum ROBOT_STATES {
   TEST_STATE
 };
 
-enum ROBOT_STATES current_state = UP_RAMP;
+enum ROBOT_STATES current_state = TAPE_FOLLOW;
 
 // binding pointers to functions
 auto fvr_ptr = std::bind(&forever_pointer);
+auto time_ptr = std::bind(&timer_pointer);
+auto time_ptr2 = std::bind(&timer_pointer2);
 auto black_tape_ptr = std::bind(&black_pointer);
+auto white_ptr = std::bind(&white_pointer);
 auto rubble_rising_ptr = std::bind(&rubble_rising_pointer);
 auto rubble_falling_ptr = std::bind(&rubble_falling_pointer);
 
@@ -275,7 +315,22 @@ void loop() {
   mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP
   blink_dat();
 
+  // if (digitalRead(START_BUTTON) == LOW) {
+  //   current_state = RESETTING;
+  // }
+
   switch (current_state) {
+    case RESETTING:
+      if (digitalRead(RIGHT_BUTTON) == LOW) {
+        current_state = RIGHT_START;
+      }
+      if (digitalRead(LEFT_BUTTON)) {
+        current_state = LEFT_START;
+      }
+      reset_gyro_move_arrays();
+
+      break;
+
     case RIGHT_START:
 
       (*turn_moves[0]).gyro_turn_absolute(0.35, SERVO_MAX_STEER / 2, 5);
@@ -304,14 +359,13 @@ void loop() {
       break;
 
     case SEEK_TAPE:
-      // there needs to be some delay here...
-      (*straight_moves[1]).gyro_drive_straight_angle(0, black_tape_ptr, -15);
-      
+      (*straight_moves[1]).gyro_drive_straight_angle(0, time_ptr2, -25);
+
       if ((*straight_moves[1]).complete()) {
-        static double start_time = millis();
-        while (millis() - start_time < 1000) {
-          mpu6050.calculate_quantities();
-        }
+        (*straight_moves[2]).gyro_drive_straight_angle(0, black_tape_ptr, -35);
+      }
+      
+      if ((*straight_moves[2]).complete()) {
         if (tape_follower.tape_sweep(mpu6050)) {
           OLED::display_text("tape found");
           current_state = TAPE_FOLLOW;
@@ -323,15 +377,21 @@ void loop() {
     case TAPE_FOLLOW:
 
       tape_follower.follow_tape(-30);
-      if (mpu6050.correct_orientation(-1 * M_PI + 0.04)) {
+
+      // change to when angle goes negative, PID straight
+      // if (mpu6050.correct_orientation(-1 * M_PI + 0.03)) {
+      if (mpu6050.negative_angle()) {
         current_state = UP_RAMP;
       }
 
+      break;
+
     case UP_RAMP:
 
-      (*straight_moves[2]).gyro_drive_straight_angle(-1 * M_PI + 0.04, rubble_rising_ptr, -10);
+      (*straight_moves[3]).gyro_drive_straight_angle(-1 * M_PI + 0.02, rubble_rising_ptr);
 
-      if ((*straight_moves[2]).complete()) {
+      if ((*straight_moves[3]).complete()) {
+        mpu6050.new_lap();
         current_state = NEW_LAP;
       }
 
@@ -346,12 +406,16 @@ void loop() {
       }
 
       if ((*turn_moves[2]).complete()) {
-        (*straight_moves[3]).gyro_drive_straight_angle(0, rubble_falling_ptr, -15);
+        (*straight_moves[4]).gyro_drive_straight_angle(0, rubble_falling_ptr, -10);
       }
 
-      if ((*straight_moves[3]).complete()) {
+      if ((*straight_moves[4]).complete()) {
         current_state = SEEK_TAPE;
+        OLED::display_text("seeking tape");
+        reset_gyro_move_arrays();
+        tape_follower.sweep_reset();
       }
+
       break;
 
     case L_STATE:
@@ -362,6 +426,46 @@ void loop() {
       break;
     
     case TEST_STATE:
+
+      // tape_follower.follow_tape(-30);
+
+      // OLED::display_text(String(white_pointer()));
+
+      // (*straight_moves[3]).gyro_drive_straight_angle(0, black_tape_ptr, -20);
+      // if ((*straight_moves[3]).complete()) {
+      //   current_state = L_STATE;
+      // }
+
+      // motors::left_motor_PWM(30);
+      // motors::right_motor_PWM(30);
+      // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
+
+
+      (*straight_moves[0]).gyro_drive_straight_angle(0, time_ptr, -10);
+
+      if ((*straight_moves[0]).complete()) {
+        (*straight_moves[1]).gyro_drive_straight_angle(0, rubble_falling_pointer, -10);
+      }
+
+      if ((*straight_moves[1]).complete() && !(*straight_moves[2]).complete() && !(*straight_moves[3]).complete()) {
+        OLED::display_text("BUMMMMMMMMMMMPPPPPPPPPPPPPYYYYYYYYYYYY");
+        // current_state = L_STATE;
+        (*straight_moves[2]).gyro_drive_straight_angle(0, time_ptr2, -25);
+      }
+
+      if ((*straight_moves[1]).complete() && (*straight_moves[2]).complete() && !(*straight_moves[3]).complete()) {
+        OLED::display_text("delay");
+        (*straight_moves[3]).gyro_drive_straight_angle(0, black_tape_ptr, -20);
+      }
+
+      if ((*straight_moves[1]).complete() && (*straight_moves[2]).complete() && (*straight_moves[3]).complete()) {
+        if (tape_follower.tape_sweep(mpu6050)) {
+          OLED::display_text("TAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPEEEEEEEEEEEE");
+          tape_follower.follow_tape(-30);
+        };      
+      }
+
+
       // (*straight_moves[3]).gyro_drive_straight_angle(0, fvr_ptr);
       // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
       // delay(1000);

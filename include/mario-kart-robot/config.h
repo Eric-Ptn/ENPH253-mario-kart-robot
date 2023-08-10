@@ -7,30 +7,14 @@
 
 #define LEFT_MOTOR_PIN PB6
 #define LEFT_MOTOR_PIN_PWM_NAME PB_6
-// #define LEFT_REVERSE_MOTOR_PIN PB7
-// #define LEFT_REVERSE_MOTOR_PIN_PWM_NAME PB_7
-#define LEFT_REVERSE_MOTOR_PIN PB8
-#define LEFT_REVERSE_MOTOR_PIN_PWM_NAME PB_8
 
-// #define RIGHT_MOTOR_PIN PB8
-// #define RIGHT_MOTOR_PIN_PWM_NAME PB_8
 #define RIGHT_MOTOR_PIN PB7
 #define RIGHT_MOTOR_PIN_PWM_NAME PB_7
-#define RIGHT_REVERSE_MOTOR_PIN PB9
-#define RIGHT_REVERSE_MOTOR_PIN_PWM_NAME PB_9
 
-#define BRIDGE_SONAR_TRIGGER PA8
-#define BRIDGE_SONAR_PWM_NAME PA_8
-#define BRIDGE_SONAR_ECHO PA11
-
-#define WALL_SONAR_TRIGGER PA9
-#define WALL_SONAR_PWM_NAME PA_9  
-#define WALL_SONAR_ECHO PA12
-
-#define START_BUTTON PA10
-
-// #define CALIBRATION_PIN PB3
-// #define RUNNING_PIN PB4
+#define START_BUTTON PA9
+#define RIGHT_BUTTON PA11
+#define LEFT_BUTTON PA12
+// PA8 is button ground
 
 // gyro and OLED connect to 2nd I2C pins, PB10 and PB11
 
@@ -59,11 +43,11 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 
 // ir calibration
 #define IR_CALIBRATION_RUNS 5000
-#define ERROR_MEMORY_THRESHOLD -200 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
+#define ERROR_MEMORY_THRESHOLD -180 // if the sum of analog readings is more than this threshold, then the previous error is used - effectively separates white and black
 #define WHITE_VALUE 0
 #define BLACK_VALUE -700
-// #define WHITE_THRESHOLD -300
-#define WHITE_THRESHOLD -200
+// #define WHITE_THRESHOLD -200
+#define WHITE_THRESHOLD -180
 // #define WHITE_THRESHOLD -125
 
 // ir and gyro quick calibration - i could use EEPROM but that's too much work
@@ -94,12 +78,12 @@ const int SAVED_VELOCITY_DRIFT = 0;
 
 
 // angle tolerance for ending a gyro turn
-#define ANGLE_TOLERANCE_RADIANS 0.015
+#define ANGLE_TOLERANCE_RADIANS 0.02
 
 // servo steering
 // #define SERVO_MOUNTING_ANGLE M_PI / 2
 #define SERVO_MOUNTING_ANGLE 2.5
-#define SERVO_MAX_STEER 0.4
+#define SERVO_MAX_STEER 0.47
 
 // sonar
 #define SONAR_FREQUENCY 17 // 1/60ms = 17Hz

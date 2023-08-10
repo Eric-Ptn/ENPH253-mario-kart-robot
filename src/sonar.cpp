@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <mario-kart-robot\config.h>
-
+/*
 namespace sonar {
     void trigger_sonar (int sonar_trigger_pin) {
         double duty_cycle_percent = 1/60.0 * 100.0;
@@ -73,3 +73,4 @@ namespace sonar {
         return false;
     }
 }
+*/

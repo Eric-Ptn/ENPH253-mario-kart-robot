@@ -349,11 +349,11 @@ bool IMU::rubble_falling_edge() {
   static bool rubbling = false;
   static bool prev_rubbling = false;
 
-  rubbling = bumpy_terrain(7);
+  rubbling = bumpy_terrain(10);
 
   if (!rubbling && prev_rubbling) {
-    prev_rubbling = rubbling;
-    OLED::display_text("BUMPYYYYY");
+    prev_rubbling = false;
+    rubbling = false;
     return true;
   }
 
@@ -368,7 +368,8 @@ bool IMU::rubble_rising_edge() {
   rubbling = bumpy_terrain(BUMPY_DEVIATION_THRESHOLD);
 
   if (rubbling && !prev_rubbling) {
-    prev_rubbling = rubbling;
+    prev_rubbling = false;
+    rubbling = false;
     return true;
   }
 
@@ -378,6 +379,15 @@ bool IMU::rubble_rising_edge() {
 
 bool IMU::correct_orientation(double target_angle) {
   return abs(circular_correction(angle - target_angle)) < ANGLE_TOLERANCE_RADIANS;
+}
+
+bool IMU::negative_angle() {
+  // OLED::display_text(String(angle));
+  return angle > 3.11 || angle < -3.13;
+}
+
+void IMU::new_lap() {
+  angle -= 0.09;
 }
 
 double IMU::circular_correction(double angle) {

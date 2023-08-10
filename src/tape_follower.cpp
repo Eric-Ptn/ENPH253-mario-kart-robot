@@ -22,11 +22,11 @@ int TapeFollower::processed_ir_reading(int i) {
   // ir_processed -= ir_processed % multiple;
   int ir_processed = analogRead(IR_PINS[i]) * ir_scaling[i] - ir_offsets[i];
 
-  // if (ir_processed < WHITE_THRESHOLD) {
-  //   return ir_processed;
-  // } else {
-  //   return 0;
-  // }
+  if (ir_processed < WHITE_THRESHOLD) {
+    return ir_processed;
+  } else {
+    return 0;
+  }
   return ir_processed;
 }
 
@@ -260,58 +260,73 @@ void TapeFollower::follow_tape(double duty_cycle_offset) {
 
 }
 
-void TapeFollower::seek_tape(IMU &imu, bool left, double duty_cycle_offset) {
+// void TapeFollower::seek_tape(IMU &imu, bool left, double duty_cycle_offset) {
 
-  static IMU::GyroMovement half_turn1(imu);
-  static IMU::GyroMovement half_turn2(imu);
-  static bool found_tape = false; // doesn't reset on new lap
+//   static IMU::GyroMovement half_turn1(imu);
+//   static IMU::GyroMovement half_turn2(imu);
+//   static bool found_tape = false; // doesn't reset on new lap
 
-  // OLED::display_text(String(found_tape));
+//   // OLED::display_text(String(found_tape));
 
-  if (!found_tape) {
-    int direction;
-    if (left) {
-      direction = 1;
-    } else {
-      direction = -1;
-    }
+//   if (!found_tape) {
+//     int direction;
+//     if (left) {
+//       direction = 1;
+//     } else {
+//       direction = -1;
+//     }
 
-    half_turn1.gyro_turn_absolute(M_PI / 2 * direction, 2 * SERVO_MAX_STEER / 3, -25);
-    if (half_turn1.complete()) {
-      half_turn2.gyro_turn_absolute(M_PI * direction, 2 * SERVO_MAX_STEER / 3, -25);
-    }
+//     half_turn1.gyro_turn_absolute(M_PI / 2 * direction, 2 * SERVO_MAX_STEER / 3, -25);
+//     if (half_turn1.complete()) {
+//       half_turn2.gyro_turn_absolute(M_PI * direction, 2 * SERVO_MAX_STEER / 3, -25);
+//     }
 
-    if (seeing_centered_tape()) {
-      OLED::display_text("found tape");
-      found_tape = true;
-    }
-  } else {
-    follow_tape(duty_cycle_offset);
-  }
+//     if (seeing_centered_tape()) {
+//       OLED::display_text("found tape");
+//       found_tape = true;
+//     }
+//   } else {
+//     follow_tape(duty_cycle_offset);
+//   }
   
-}
+// }
 
 bool TapeFollower::tape_sweep(IMU &mpu6050) {
-  static double start_time = millis();
-  static bool complete = false;
+  // static double start_time = millis();
+  // static bool running = false;
 
-  if (complete) {
+  if (sweep_done) {
     return true;
   }
 
-  motors::servo_pwm(SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER);
-  motors::left_motor_PWM(0);
-  motors::right_motor_PWM(0);
-
-  while (millis() - start_time < 100) {
-    mpu6050.calculate_quantities();
+  if (!sweep_running) {
+    sweep_start_time = millis();
+    sweep_running = true;
   }
 
-  if (seeing_black()) {
-    complete = true;
+  if (sweep_running) {
+    motors::servo_pwm(SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER);
+    motors::left_motor_PWM(15);
+    motors::right_motor_PWM(20);
+
+    while (millis() - sweep_start_time < 100) {
+      mpu6050.calculate_quantities();
+    }
+
+    if (seeing_black()) {
+      sweep_done = true;
+      sweep_running = false;
+      return true;
+    }
+
+    return false;
   }
 
-  return false;
+  
+}
+
+void TapeFollower::sweep_reset() {
+  sweep_done = false;
 }
 
 
@@ -338,48 +353,43 @@ bool TapeFollower::seeing_black() {
 
   // OLED::display_text(String(sum_readings) + " " + String(ir_reading_no_threshold(0)) + " "+ String(ir_reading_no_threshold(1)) + " "+ String(ir_reading_no_threshold(2)) + " "+ String(ir_reading_no_threshold(3)) + " ");
 
-  if (sum_readings < ERROR_MEMORY_THRESHOLD) {
+  // if (sum_readings < ERROR_MEMORY_THRESHOLD) {
+  if (sum_readings < -400) {
     return true;
   }
 
   return false;
 }
 
-bool TapeFollower::seeing_centered_tape() {
-  static int num_measurements = 1;
-  static int num_true = 0;
+// bool TapeFollower::seeing_centered_tape() {
+//   static int num_measurements = 1;
+//   static int num_true = 0;
 
-  int processed_readings[4];
+//   int processed_readings[4];
 
-  for (int i = 0; i < NUM_IR_SENSORS; i++) {
-    processed_readings[i] = processed_ir_reading(i);
-  }
+//   for (int i = 0; i < NUM_IR_SENSORS; i++) {
+//     processed_readings[i] = processed_ir_reading(i);
+//   }
 
-  int num_black = 0;
+//   int num_black = 0;
 
-  for (int i = 0; i < NUM_IR_SENSORS; i++) {
-    if (processed_readings[i] < 0) {
-      num_black++;
-    }
-  }
+//   for (int i = 0; i < NUM_IR_SENSORS; i++) {
+//     if (processed_readings[i] < 0) {
+//       num_black++;
+//     }
+//   }
 
-  bool seeing_black_rn = (num_black == 2) || 
-  (processed_readings[0] == 0 && processed_readings[1] < 0 && processed_readings[2] == 0 && processed_readings[3] == 0) || 
-  (processed_readings[0] == 0 && processed_readings[1] == 0 && processed_readings[2] < 0 && processed_readings[3] == 0);
+//   bool seeing_black_rn = (num_black == 2) || 
+//   (processed_readings[0] == 0 && processed_readings[1] < 0 && processed_readings[2] == 0 && processed_readings[3] == 0) || 
+//   (processed_readings[0] == 0 && processed_readings[1] == 0 && processed_readings[2] < 0 && processed_readings[3] == 0);
 
-  if (seeing_black_rn && num_true == num_measurements) {
-    return true;
-  } else if (seeing_black_rn) {
-    num_true++;
-  } else {
-    num_true = 0;
-  }
+//   if (seeing_black_rn && num_true == num_measurements) {
+//     return true;
+//   } else if (seeing_black_rn) {
+//     num_true++;
+//   } else {
+//     num_true = 0;
+//   }
 
-  return false;
-}
-
-bool TapeFollower::time_pointer() {
-  static double time_start = millis();
-
-  return millis() - time_start > 8000;
-}
+//   return false;
+// }

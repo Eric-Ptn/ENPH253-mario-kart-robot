@@ -20,7 +20,7 @@ class IMU{
         double gyro_z_drift = 0;
         double accel_x_drift = 0;
         double velocity_drift = 0;
-        double angle_drift = 0;
+        double angle_drift = 0; // 0.01 rad per 2 min
 
         // gyro calculating angle
         double angle = 0;
@@ -73,6 +73,7 @@ class IMU{
         void angle_linear_correction();
 
         void reset_quantities();
+        void new_lap();
 
 
         // SENSOR EVENTS *******************************************************************************************************************
@@ -82,6 +83,7 @@ class IMU{
         bool rubble_falling_edge();
         bool rubble_rising_edge();
         bool correct_orientation(double target_angle);
+        bool negative_angle();
 
         // HELPERS *************************************************************************************************************************
         double circular_correction(double angle);
