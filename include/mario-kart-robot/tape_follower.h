@@ -59,4 +59,5 @@ class TapeFollower {
         bool seeing_black();
         bool seeing_centered_tape();
         bool time_pointer();
+        bool seeing_ramp_line();
 };

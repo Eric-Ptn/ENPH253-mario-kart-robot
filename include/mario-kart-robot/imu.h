@@ -24,6 +24,7 @@ class IMU{
 
         // gyro calculating angle
         double angle = 0;
+        double angle_y = 0;
         double velocity = 0;
         double last_imu_time = 0; // time of last imu reading
 
@@ -74,6 +75,8 @@ class IMU{
 
         void reset_quantities();
         void new_lap();
+        void calibrate_at_ramp();
+        void set_pitch_to_zero();
 
 
         // SENSOR EVENTS *******************************************************************************************************************
@@ -84,6 +87,7 @@ class IMU{
         bool rubble_rising_edge();
         bool correct_orientation(double target_angle);
         bool negative_angle();
+        bool correct_y_orientation_at_ramp();
 
         // HELPERS *************************************************************************************************************************
         double circular_correction(double angle);

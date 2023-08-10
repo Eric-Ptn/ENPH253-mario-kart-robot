@@ -137,6 +137,8 @@ void setup() {
 
 
   pinMode(START_BUTTON, INPUT_PULLUP);
+  pinMode(RIGHT_BUTTON, INPUT_PULLUP);
+  pinMode(LEFT_BUTTON, INPUT_PULLUP);
   pinMode(PA8, OUTPUT);
   digitalWrite(PA8, LOW);
 
@@ -300,7 +302,7 @@ enum ROBOT_STATES {
   TEST_STATE
 };
 
-enum ROBOT_STATES current_state = TAPE_FOLLOW;
+enum ROBOT_STATES current_state = RESETTING;
 
 // binding pointers to functions
 auto fvr_ptr = std::bind(&forever_pointer);
@@ -312,7 +314,7 @@ auto rubble_rising_ptr = std::bind(&rubble_rising_pointer);
 auto rubble_falling_ptr = std::bind(&rubble_falling_pointer);
 
 void loop() {
-  mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP
+  mpu6050.calculate_quantities(); // MUST BE CALLED EVERY LOOP //CHANGE BACK TO mpu6050.calculate_quantities
   blink_dat();
 
   // if (digitalRead(START_BUTTON) == LOW) {
@@ -346,7 +348,7 @@ void loop() {
       break;
 
     case LEFT_START:
-      (*turn_moves[0]).gyro_turn_absolute(-0.15, SERVO_MAX_STEER / 2, 5); // interestingly this works, can turn to slightly off angle and then straight PID back to 0
+      (*turn_moves[0]).gyro_turn_absolute(-0.15, SERVO_MAX_STEER / 2.5, 5); // interestingly this works, can turn to slightly off angle and then straight PID back to 0
       
       if ((*turn_moves[0]).complete()) {
         (*straight_moves[0]).gyro_drive_straight_angle(0, fvr_ptr);
@@ -368,6 +370,7 @@ void loop() {
       if ((*straight_moves[2]).complete()) {
         if (tape_follower.tape_sweep(mpu6050)) {
           OLED::display_text("tape found");
+          mpu6050.set_pitch_to_zero();
           current_state = TAPE_FOLLOW;
         };
       }
@@ -380,7 +383,13 @@ void loop() {
 
       // change to when angle goes negative, PID straight
       // if (mpu6050.correct_orientation(-1 * M_PI + 0.03)) {
-      if (mpu6050.negative_angle()) {
+      // if (mpu6050.negative_angle()) {
+      //   current_state = UP_RAMP;
+      // }
+
+      if (mpu6050.correct_y_orientation_at_ramp() && mpu6050.negative_angle()) {
+        mpu6050.calibrate_at_ramp();
+        OLED::display_text("WE DID ITTT!!!!!!!");
         current_state = UP_RAMP;
       }
 
@@ -388,10 +397,10 @@ void loop() {
 
     case UP_RAMP:
 
-      (*straight_moves[3]).gyro_drive_straight_angle(-1 * M_PI + 0.02, rubble_rising_ptr);
+      (*straight_moves[3]).gyro_drive_straight_angle(M_PI, rubble_rising_ptr);
 
       if ((*straight_moves[3]).complete()) {
-        mpu6050.new_lap();
+        // mpu6050.new_lap();
         current_state = NEW_LAP;
       }
 
@@ -399,7 +408,7 @@ void loop() {
 
     case NEW_LAP:
     // this will be different depending on starting location of robot
-      (*turn_moves[1]).gyro_turn_absolute(-1 * M_PI / 2, SERVO_MAX_STEER);
+      (*turn_moves[1]).gyro_turn_absolute(-1 * M_PI / 2, SERVO_MAX_STEER / 1.35);
 
       if ((*turn_moves[1]).complete()) {
         (*turn_moves[2]).gyro_turn_absolute(0, SERVO_MAX_STEER / 2);
@@ -419,17 +428,23 @@ void loop() {
       break;
 
     case L_STATE:
-      motors::servo_pwm(SERVO_MOUNTING_ANGLE);
-      motors::left_motor_PWM(0);
-      motors::right_motor_PWM(0);
 
       break;
     
     case TEST_STATE:
+      motors::servo_pwm(SERVO_MOUNTING_ANGLE - SERVO_MAX_STEER);
+      delay(1000);
+      motors::servo_pwm(SERVO_MOUNTING_ANGLE + SERVO_MAX_STEER);
+      delay(1000);
 
-      // tape_follower.follow_tape(-30);
+      // OLED::display_text("s0: " + String(tape_follower.processed_ir_reading(0)) + ", "
+      //                 " s1: " + String(tape_follower.processed_ir_reading(1)) + ", "
+      //                 " s2: " + String(tape_follower.processed_ir_reading(2)) + ", "
+      //                 " s3: " + String(tape_follower.processed_ir_reading(3)));
 
-      // OLED::display_text(String(white_pointer()));
+      // tape_follower.follow_tape(-50);
+
+      // OLED::display_text(String(tape_follower.seeing_ramp_line()));
 
       // (*straight_moves[3]).gyro_drive_straight_angle(0, black_tape_ptr, -20);
       // if ((*straight_moves[3]).complete()) {
@@ -441,29 +456,7 @@ void loop() {
       // motors::servo_pwm(SERVO_MOUNTING_ANGLE);
 
 
-      (*straight_moves[0]).gyro_drive_straight_angle(0, time_ptr, -10);
-
-      if ((*straight_moves[0]).complete()) {
-        (*straight_moves[1]).gyro_drive_straight_angle(0, rubble_falling_pointer, -10);
-      }
-
-      if ((*straight_moves[1]).complete() && !(*straight_moves[2]).complete() && !(*straight_moves[3]).complete()) {
-        OLED::display_text("BUMMMMMMMMMMMPPPPPPPPPPPPPYYYYYYYYYYYY");
-        // current_state = L_STATE;
-        (*straight_moves[2]).gyro_drive_straight_angle(0, time_ptr2, -25);
-      }
-
-      if ((*straight_moves[1]).complete() && (*straight_moves[2]).complete() && !(*straight_moves[3]).complete()) {
-        OLED::display_text("delay");
-        (*straight_moves[3]).gyro_drive_straight_angle(0, black_tape_ptr, -20);
-      }
-
-      if ((*straight_moves[1]).complete() && (*straight_moves[2]).complete() && (*straight_moves[3]).complete()) {
-        if (tape_follower.tape_sweep(mpu6050)) {
-          OLED::display_text("TAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPEEEEEEEEEEEE");
-          tape_follower.follow_tape(-30);
-        };      
-      }
+      
 
 
       // (*straight_moves[3]).gyro_drive_straight_angle(0, fvr_ptr);

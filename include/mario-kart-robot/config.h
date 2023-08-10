@@ -11,8 +11,8 @@
 #define RIGHT_MOTOR_PIN PB7
 #define RIGHT_MOTOR_PIN_PWM_NAME PB_7
 
-#define START_BUTTON PA9
-#define RIGHT_BUTTON PA11
+#define START_BUTTON PA11
+#define RIGHT_BUTTON PA9
 #define LEFT_BUTTON PA12
 // PA8 is button ground
 
@@ -31,7 +31,7 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define GYRO_MAX_INTEGRAL 1
 
 // tape following PID values
-#define TAPE_FOLLOWING_KP 0.6
+#define TAPE_FOLLOWING_KP 0.55
 #define TAPE_FOLLOWING_KI 0
 #define TAPE_FOLLOWING_KD 0
 #define TAPE_FOLLOWING_MAX_INTEGRAL 1
@@ -48,6 +48,7 @@ const int NUM_IR_SENSORS = sizeof(IR_PINS) / sizeof(IR_PINS[0]);
 #define BLACK_VALUE -700
 // #define WHITE_THRESHOLD -200
 #define WHITE_THRESHOLD -180
+#define RAMP_LINE_THRESHOLD -600
 // #define WHITE_THRESHOLD -125
 
 // ir and gyro quick calibration - i could use EEPROM but that's too much work
@@ -83,7 +84,7 @@ const int SAVED_VELOCITY_DRIFT = 0;
 // servo steering
 // #define SERVO_MOUNTING_ANGLE M_PI / 2
 #define SERVO_MOUNTING_ANGLE 2.5
-#define SERVO_MAX_STEER 0.47
+#define SERVO_MAX_STEER 0.52
 
 // sonar
 #define SONAR_FREQUENCY 17 // 1/60ms = 17Hz

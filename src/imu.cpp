@@ -50,6 +50,18 @@ void IMU::calculate_quantities() {
     angle += 2 * M_PI;
   }
 
+  angle_y += gyro_readings[1] * dt;
+
+  if (angle_y > M_PI) {
+    angle_y -= 2 * M_PI;
+  }
+  if (angle_y < -1 * M_PI) {
+    angle_y += 2 * M_PI;
+  }
+
+
+
+
   velocity += accel_readings[0] * dt - velocity_drift * dt - accel_x_drift * pow(dt, 2.0);
 
   last_imu_time = millis();
@@ -81,6 +93,16 @@ void IMU::calculate_quantities_print() {
     angle += 2 * M_PI;
   }
 
+   angle_y += gyro_readings[1] * dt;
+
+  if (angle_y > M_PI) {
+    angle_y -= 2 * M_PI;
+  }
+  if (angle_y < -1 * M_PI) {
+    angle_y += 2 * M_PI;
+  }
+
+
   velocity += accel_readings[0] * dt - velocity_drift * dt - accel_x_drift * pow(dt, 2.0);
 
   last_imu_time = millis();
@@ -91,7 +113,7 @@ void IMU::calculate_quantities_print() {
     z_accel_history.pop_front();
   }
 
-  String imu_text = "Angle: " + String(angle, 5);
+  String imu_text = "Angle_y: " + String(angle_y, 5) + ", Angle_x:" + String(angle, 5);
   OLED::display_text(imu_text);
 
 } 
@@ -381,13 +403,33 @@ bool IMU::correct_orientation(double target_angle) {
   return abs(circular_correction(angle - target_angle)) < ANGLE_TOLERANCE_RADIANS;
 }
 
+bool IMU::correct_y_orientation_at_ramp() {
+  return angle_y < -0.09;
+}
+
+
 bool IMU::negative_angle() {
   // OLED::display_text(String(angle));
-  return angle > 3.11 || angle < -3.13;
+  return angle > 3.08 || angle < -3.13;
 }
 
 void IMU::new_lap() {
-  angle -= 0.09;
+  angle += 0.09;
+
+  if (angle > M_PI) {
+    angle -= 2 * M_PI;
+  }
+  if (angle < -1 * M_PI) {
+    angle += 2 * M_PI;
+  }
+}
+
+void IMU::calibrate_at_ramp() {
+  angle = M_PI + 0.09;
+}
+
+void IMU::set_pitch_to_zero() {
+  angle_y = 0;
 }
 
 double IMU::circular_correction(double angle) {

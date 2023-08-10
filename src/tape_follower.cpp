@@ -361,6 +361,20 @@ bool TapeFollower::seeing_black() {
   return false;
 }
 
+bool TapeFollower::seeing_ramp_line() { 
+  double sum_readings = 0;
+  for (int i = 0; i < NUM_IR_SENSORS; i++) {
+    sum_readings += processed_ir_reading(i);
+  }
+
+  if (sum_readings < RAMP_LINE_THRESHOLD && processed_ir_reading(0) > -100) {
+    return true;
+  }
+
+  return false;
+
+}
+
 // bool TapeFollower::seeing_centered_tape() {
 //   static int num_measurements = 1;
 //   static int num_true = 0;
